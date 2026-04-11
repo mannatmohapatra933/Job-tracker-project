@@ -1,0 +1,137 @@
+.analytics-container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  margin: 20px 0;
+  color: white;
+}
+
+.analytics-container h2 {
+  text-align: center;
+  font-size: 2em;
+  margin-bottom: 30px;
+  color: #4f46e5;
+}
+
+.loading {
+  text-align: center;
+  color: #b0b0b0;
+  padding: 40px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: rgba(79, 70, 229, 0.1);
+  border: 2px solid rgba(138, 43, 226, 0.4);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(138, 43, 226, 0.3);
+  border-color: rgba(138, 43, 226, 0.7);
+}
+
+.stat-card h3 {
+  font-size: 2em;
+  margin: 0 0 10px 0;
+  color: #4f46e5;
+}
+
+.stat-card p {
+  margin: 0;
+  color: #b0b0b0;
+  font-size: 0.9em;
+}
+
+.stat-card.applications h3 { color: #3b82f6; }
+.stat-card.interviews h3 { color: #f59e0b; }
+.stat-card.offers h3 { color: #10b981; }
+.stat-card.rejected h3 { color: #ef4444; }
+.stat-card.wishlisted h3 { color: #ec4899; }
+.stat-card.rate h3 { color: #8b5cf6; }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.chart-box {
+  background: rgba(138, 43, 226, 0.05);
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.chart-box h3 {
+  margin: 0 0 20px 0;
+  color: #4f46e5;
+  font-size: 1.3em;
+}
+
+.chart-data {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chart-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-row .label {
+  min-width: 100px;
+  color: #d0d0d0;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 25px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 0.85em;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card h3 {
+    font-size: 1.5em;
+  }
+}
