@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Auth.css";
 
-const API_URL = "http://localhost:8081/auth";
+const API_URL = `${process.env.REACT_APP_API_URL.replace('/api', '')}/auth`;
 
-export default function Login({ onLoginSuccess }) {
+export default function Login({ onLoginSuccess, setShowRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,7 +31,13 @@ export default function Login({ onLoginSuccess }) {
       setPassword("");
       onLoginSuccess();
     } catch (err) {
-      setError(err.response?.data || "Login failed");
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (typeof err.response?.data === 'string') {
+        setError(err.response.data);
+      } else {
+        setError("Login failed. Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -73,7 +79,13 @@ export default function Login({ onLoginSuccess }) {
         </form>
 
         <p className="auth-link">
-          New here? Create an account first! 📝
+        New here? 
+         <span 
+        onClick={() => setShowRegister(true)} 
+        style={{ color: "blue", cursor: "pointer" }}
+        >
+        Create an account first!
+         </span>
         </p>
       </div>
     </div>

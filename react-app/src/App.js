@@ -6,9 +6,15 @@ import Analytics from "./Analytics";
 import JobNotes from "./JobNotes";
 import Login from "./Login";
 import Register from "./Register";
+import { getJobs, toggleWishlist } from "./api";
+import { Routes, Route } from "react-router-dom";
+import NotFound from "./NotFound";
+
+axios.defaults.headers.common["Authorization"] =
+  `Bearer ${localStorage.getItem("token")}`;
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Dev bypass
   const [showRegister, setShowRegister] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   
@@ -16,12 +22,13 @@ function App() {
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [experienceLevels, setExperienceLevels] = useState([]);
+  const [locations, setLocations] = useState([]);
   
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedExperience, setSelectedExperience] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [showJobs, setShowJobs] = useState(false);
-  const [showForm, setShowForm] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
 
@@ -29,37 +36,23 @@ function App() {
   const [showNotes, setShowNotes] = useState(false);
   const [selectedJobIdForNotes, setSelectedJobIdForNotes] = useState(null);
 
-  // Form states for adding custom jobs
-  const [company, setCompany] = useState("");
-  const [role, setRole] = useState("");
-  const [status, setStatus] = useState("Applied");
-  const [editId, setEditId] = useState(null);
-
-  const API_URL = "http://localhost:8081/jobs";
+  const API_URL = `${process.env.REACT_APP_API_URL}/jobs`;
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem("token");
-    const email = localStorage.getItem("userEmail");
-    
-    if (token && email) {
-      setIsAuthenticated(true);
-      setUserEmail(email);
-      fetchJobs();
-      fetchFilters();
-    }
+    const initData = async () => {
+      try {
+        const data = await getJobs();
+        setJobs(data);
+        await fetchFilters();
+      } catch(err) {
+        console.error(err);
+      }
+    };
+    initData();
   }, []);
 
   const filterJobs = useCallback(() => {
     let filtered = jobs;
-
-    if (selectedCompany) {
-      filtered = filtered.filter(job => job.company === selectedCompany);
-    }
-
-    if (selectedExperience) {
-      filtered = filtered.filter(job => job.experienceLevel === selectedExperience);
-    }
 
     if (searchTerm) {
       filtered = filtered.filter(job =>
@@ -69,7 +62,7 @@ function App() {
     }
 
     setFilteredJobs(filtered);
-  }, [jobs, selectedCompany, selectedExperience, searchTerm]);
+  }, [jobs, searchTerm]);
 
   useEffect(() => {
     filterJobs();
@@ -77,7 +70,15 @@ function App() {
 
   const fetchJobs = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const token = localStorage.getItem("token");
+      const c = (!selectedCompany || selectedCompany === "All Companies") ? "" : selectedCompany;
+      const e = (!selectedExperience || selectedExperience === "All Experience Levels") ? "" : selectedExperience;
+      const l = (!selectedLocation || selectedLocation === "All Locations") ? "" : selectedLocation;
+
+      const res = await axios.get(
+        `${API_URL}?company=${c}&experienceLevel=${e}&location=${l}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setJobs(res.data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
@@ -87,50 +88,24 @@ function App() {
   const fetchFilters = async () => {
     try {
       const companiesRes = await axios.get(`${API_URL}/filters/companies`);
-      const experienceRes = await axios.get(`${API_URL}/filters/experience-levels`);
       setCompanies(companiesRes.data || []);
+    } catch (err) {
+      console.error("Error fetching companies:", err);
+    }
+    
+    try {
+      const experienceRes = await axios.get(`${API_URL}/filters/experience-levels`);
       setExperienceLevels(experienceRes.data || []);
     } catch (err) {
-      console.error("Error fetching filters:", err);
+      console.error("Error fetching experience:", err);
     }
-  };
-
-  const addOrUpdateJob = async () => {
-    if (!company || !role) return;
 
     try {
-      if (editId) {
-        await axios.put(`${API_URL}/${editId}`, { company, role, status });
-        setEditId(null);
-      } else {
-        await axios.post(API_URL, { company, role, status });
-      }
-
-      setCompany("");
-      setRole("");
-      setStatus("Applied");
-      setShowForm(false);
-      fetchJobs();
+      const locationsRes = await axios.get(`${API_URL}/filters/locations`);
+      setLocations(locationsRes.data || []);
     } catch (err) {
-      console.error("Error saving job:", err);
+      console.error("Error fetching locations:", err);
     }
-  };
-
-  const deleteJob = async (id) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      fetchJobs();
-    } catch (err) {
-      console.error("Error deleting job:", err);
-    }
-  };
-
-  const editJob = (job) => {
-    setCompany(job.company);
-    setRole(job.role);
-    setStatus(job.status);
-    setEditId(job.id);
-    setShowForm(true);
   };
 
   const getStatusStyle = (status) => {
@@ -145,19 +120,11 @@ function App() {
     }
   };
 
-  const handleApplyClick = (job) => {
-    if (job.applicationLink) {
-      window.open(job.applicationLink, '_blank');
-    }
-  };
-
-  const toggleWishlist = async (job) => {
-    try {
-      await axios.put(`${API_URL}/${job.id}/wishlist`);
-      fetchJobs();
-    } catch (err) {
-      console.error("Error toggling wishlist:", err);
-    }
+  const handleWishlist = async (id) => {
+    const updatedJob = await toggleWishlist(id);
+    setJobs(jobs.map(job =>
+      job.id === id ? updatedJob : job
+    ));
   };
 
   const openNotes = (jobId) => {
@@ -165,11 +132,11 @@ function App() {
     setShowNotes(true);
   };
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = async () => {
     setIsAuthenticated(true);
     setUserEmail(localStorage.getItem("userEmail"));
     setShowRegister(false);
-    fetchJobs();
+    await fetchJobs();
     fetchFilters();
   };
 
@@ -185,13 +152,13 @@ function App() {
   };
 
   // If not authenticated, show login/register
-  if (!isAuthenticated) {
-    return (
-      <div>
-        {showRegister ? (
+  const authContent = (
+    <div>
+      {showRegister ? (
           <Register onRegisterSuccess={handleLoginSuccess} />
         ) : (
-          <Login onLoginSuccess={handleLoginSuccess} />
+          <Login onLoginSuccess={handleLoginSuccess}
+          setShowRegister={setShowRegister} />
         )}
         <div style={{ textAlign: "center", marginTop: "20px", color: "#999" }}>
           {showRegister ? (
@@ -225,11 +192,10 @@ function App() {
           )}
         </div>
       </div>
-    );
-  }
+  );
 
   // If authenticated, show the job tracker
-  return (
+  const mainContent = (
     <div className="container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h1>💼 Job Application Tracker</h1>
@@ -301,7 +267,7 @@ function App() {
                   </div>
 
                   <div className="card-footer">
-                    <button className="wishlist-btn active" onClick={() => toggleWishlist(job)}>
+                    <button className="wishlist-btn active" onClick={() => handleWishlist(job.id)}>
                       ⭐ Remove
                     </button>
                   </div>
@@ -334,47 +300,25 @@ function App() {
           {experienceLevels.map(exp => <option key={exp} value={exp}>{exp}</option>)}
         </select>
 
-        <button onClick={() => setShowForm(!showForm)} className="add-custom-btn">
-          {showForm ? "Cancel" : "+ Add Custom Job"}
-        </button>
+        <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className="filter-select">
+          <option value="">All Locations</option>
+          {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+        </select>
 
-        <button onClick={() => setShowJobs(!showJobs)} className="toggle-btn">
-          {showJobs ? "Hide Jobs" : "Show Jobs"}
+        <button onClick={() => { setShowJobs(true); fetchJobs(); }} className="toggle-btn shine-btn">
+          Search Jobs ✨
         </button>
       </div>
 
-      {/* Add Custom Job Form */}
-      {showForm && (
-        <div className="form">
-          <input
-            placeholder="Company"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-          />
-          <input
-            placeholder="Role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          />
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option>Applied</option>
-            <option>Interview</option>
-            <option>Interview Scheduled</option>
-            <option>Offer</option>
-            <option>Under Review</option>
-            <option>Rejected</option>
-          </select>
-          <button onClick={addOrUpdateJob}>
-            {editId ? "Update" : "Add Job"}
-          </button>
-        </div>
-      )}
+
 
       {/* Job Listings */}
-      {showJobs && (
+      {showJobs && 
         <div className="list">
           {filteredJobs.length > 0 ? (
-            filteredJobs.map((job) => (
+            filteredJobs.map((job) => {
+              console.log(job);
+              return (
               <div className="card" key={job.id}>
                 <div className="card-header">
                   <div className="company-section">
@@ -399,33 +343,30 @@ function App() {
 
                 <div className="card-footer">
                   {job.applicationLink && (
-                    <button className="apply-btn" onClick={() => handleApplyClick(job)}>
-                      🔗 Apply
-                    </button>
+                    <a href={job.applicationLink} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                      <button className="apply-btn glow-btn">
+                        🔗 Apply Now
+                      </button>
+                    </a>
                   )}
                   <button className="notes-btn" onClick={() => openNotes(job.id)}>
                     📝 Notes
                   </button>
                   <button 
                     className={`wishlist-btn ${job.wishlisted ? 'active' : ''}`} 
-                    onClick={() => toggleWishlist(job)}
+                    onClick={() => handleWishlist(job.id)}
                   >
-                    {job.wishlisted ? '⭐ Remove' : '☆ Wishlist'}
-                  </button>
-                  <button className="edit-btn" onClick={() => editJob(job)}>
-                    ✏️ Edit
-                  </button>
-                  <button className="delete-btn" onClick={() => deleteJob(job.id)}>
-                    🗑️ Delete
+                    {job.wishlisted ? '⭐ Saved' : '☆ Save Job'}
                   </button>
                 </div>
               </div>
-            ))
+              );
+            })
           ) : (
             <p className="no-jobs">No jobs found matching your filters</p>
           )}
-        </div>
-      )}
+          </div>
+};
 
       <div className="stats">
         <p>Total Jobs: {jobs.length} | Filtered: {filteredJobs.length}</p>
@@ -438,6 +379,13 @@ function App() {
         onClose={() => setShowNotes(false)}
       />
     </div>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={isAuthenticated ? mainContent : authContent} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

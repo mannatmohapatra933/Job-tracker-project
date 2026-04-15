@@ -1,9 +1,11 @@
 com\example\demo\JobNoteController.class
 com\example\demo\DemoApplication.class
+com\example\demo\security\JwtFilter.class
 com\example\demo\SecurityConfig.class
 com\example\demo\JobController.class
 com\example\demo\SecurityBeans.class
 com\example\demo\JobRepository.class
+com\example\demo\CorsConfig.class
 com\example\demo\RegisterRequest.class
 com\example\demo\DataLoader.class
 com\example\demo\JobNoteRepository.class

@@ -9,7 +9,14 @@ function Analytics({ showAnalytics }) {
   const [byExperience, setByExperience] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "http://localhost:8081/jobs";
+  const API_URL = `${process.env.REACT_APP_API_URL}/jobs`;
+
+  const getHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+  };
 
   useEffect(() => {
     if (showAnalytics) {
@@ -20,10 +27,10 @@ function Analytics({ showAnalytics }) {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const summaryRes = await axios.get(`${API_URL}/analytics/summary`);
-      const statusRes = await axios.get(`${API_URL}/analytics/by-status`);
-      const companyRes = await axios.get(`${API_URL}/analytics/by-company`);
-      const experienceRes = await axios.get(`${API_URL}/analytics/by-experience`);
+      const summaryRes = await axios.get(`${API_URL}/analytics/summary`, { headers: getHeaders() });
+      const statusRes = await axios.get(`${API_URL}/analytics/by-status`, { headers: getHeaders() });
+      const companyRes = await axios.get(`${API_URL}/analytics/by-company`, { headers: getHeaders() });
+      const experienceRes = await axios.get(`${API_URL}/analytics/by-experience`, { headers: getHeaders() });
 
       setStats(summaryRes.data);
       setByStatus(statusRes.data);

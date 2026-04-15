@@ -33,6 +33,10 @@ public class JwtService {
         }
     }
 
+    public String extractUsername(String token) {
+        return extractEmail(token);
+    }
+
     public boolean isTokenValid(String token, String email) {
         String extractedEmail = extractEmail(token);
         return extractedEmail != null && extractedEmail.equals(email);
