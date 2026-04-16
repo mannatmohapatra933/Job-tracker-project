@@ -9,6 +9,7 @@ import Register from "./Register";
 import { getJobs, toggleWishlist } from "./api";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./NotFound";
+import AddJob from "./AddJob";
 
 axios.defaults.headers.common["Authorization"] =
   `Bearer ${localStorage.getItem("token")}`;
@@ -31,6 +32,7 @@ function App() {
   const [showJobs, setShowJobs] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
+  const [showAddJob, setShowAddJob] = useState(false);
 
   // Notes states
   const [showNotes, setShowNotes] = useState(false);
@@ -238,7 +240,25 @@ function App() {
         >
           📋 Jobs
         </button>
+        <button 
+          className={`nav-btn ${showAddJob ? 'active' : ''}`}
+          onClick={() => setShowAddJob(true)}
+        >
+          ➕ Add Job
+        </button>
       </div>
+
+      {/* Add Job Modal */}
+      {showAddJob && (
+        <AddJob 
+          onClose={() => setShowAddJob(false)} 
+          onJobAdded={(newJob) => {
+            setJobs([...jobs, newJob]);
+            setShowAddJob(false);
+            fetchFilters();
+          }} 
+        />
+      )}
 
       {/* Analytics Dashboard */}
       {showAnalytics && <Analytics showAnalytics={showAnalytics} />}
