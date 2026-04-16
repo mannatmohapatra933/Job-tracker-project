@@ -15,7 +15,7 @@ axios.defaults.headers.common["Authorization"] =
   `Bearer ${localStorage.getItem("token")}`;
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Dev bypass
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
   const [showRegister, setShowRegister] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   
