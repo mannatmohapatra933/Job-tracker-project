@@ -14,6 +14,7 @@ function JobNotes({ jobId, showNotes, onClose }) {
     if (showNotes && jobId) {
       fetchNotes();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNotes, jobId]);
 
   const fetchNotes = async () => {

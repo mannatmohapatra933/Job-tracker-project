@@ -22,6 +22,7 @@ function Analytics({ showAnalytics }) {
     if (showAnalytics) {
       fetchAnalytics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAnalytics]);
 
   const fetchAnalytics = async () => {
