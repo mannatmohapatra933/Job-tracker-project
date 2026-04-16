@@ -8,7 +8,7 @@ function JobNotes({ jobId, showNotes, onClose }) {
   const [noteType, setNoteType] = useState('general');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = `${process.env.REACT_APP_API_URL.replace('/api', '')}/jobs/notes`;
+  const API_URL = `${(process.env.REACT_APP_API_URL || '').replace('/api', '')}/jobs/notes`;
 
   useEffect(() => {
     if (showNotes && jobId) {
