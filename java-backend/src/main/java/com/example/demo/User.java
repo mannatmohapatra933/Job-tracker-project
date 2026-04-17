@@ -24,6 +24,8 @@ public class User {
 
     private String role = "USER";
 
+    private boolean verified = false;
+
     // Constructors
     public User() {
     }
@@ -74,5 +76,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 }

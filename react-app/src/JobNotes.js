@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './JobNotes.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./JobNotes.css";
 
 function JobNotes({ jobId, showNotes, onClose }) {
   const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState('');
-  const [noteType, setNoteType] = useState('general');
+  const [newNote, setNewNote] = useState("");
+  const [noteType, setNoteType] = useState("general");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = `${(process.env.REACT_APP_API_URL || '').replace('/api', '')}/jobs/notes`;
+  const API_URL = `${(process.env.REACT_APP_API_URL || "").replace("/api", "")}/jobs/notes`;
 
   useEffect(() => {
-    if (showNotes && jobId) {
-      fetchNotes();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (showNotes && jobId) fetchNotes();
+    // eslint-disable-next-line
   }, [showNotes, jobId]);
 
   const fetchNotes = async () => {
@@ -22,25 +20,19 @@ function JobNotes({ jobId, showNotes, onClose }) {
       setLoading(true);
       const res = await axios.get(`${API_URL}/job/${jobId}`);
       setNotes(res.data || []);
-      setLoading(false);
     } catch (err) {
       console.error("Error fetching notes:", err);
+    } finally {
       setLoading(false);
     }
   };
 
   const addNote = async () => {
     if (!newNote.trim()) return;
-
     try {
-      const noteData = {
-        jobId,
-        noteContent: newNote,
-        noteType
-      };
-      await axios.post(API_URL, noteData);
-      setNewNote('');
-      setNoteType('general');
+      await axios.post(API_URL, { jobId, noteContent: newNote, noteType });
+      setNewNote("");
+      setNoteType("general");
       fetchNotes();
     } catch (err) {
       console.error("Error adding note:", err);
@@ -59,59 +51,81 @@ function JobNotes({ jobId, showNotes, onClose }) {
   if (!showNotes) return null;
 
   return (
-    <div className="notes-modal-overlay" onClick={onClose}>
-      <div className="notes-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="notes-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="notes-card">
         <div className="notes-header">
-          <h3>📝 Job Notes</h3>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <span className="notes-title">
+            <span className="material-symbols-outlined">edit_note</span>
+            Job Notes
+          </span>
+          <button className="notes-close-btn" onClick={onClose}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
 
-        <div className="notes-content">
-          {/* Add Note Section */}
-          <div className="add-note-section">
-            <textarea
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Add a note... (Interview feedback, follow-up tasks, etc.)"
-              className="note-textarea"
-            />
-            <div className="note-controls">
-              <select value={noteType} onChange={(e) => setNoteType(e.target.value)} className="note-type-select">
-                <option value="general">General Note</option>
-                <option value="interview">Interview Notes</option>
-                <option value="feedback">Feedback</option>
-                <option value="followup">Follow-up</option>
-              </select>
-              <button onClick={addNote} className="add-note-btn">Add Note</button>
-            </div>
+        {/* Add Note */}
+        <div className="notes-input-area">
+          <textarea
+            className="notes-textarea"
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            placeholder="Add a note... (interview feedback, follow-up tasks, etc.)"
+            onKeyDown={(e) => e.ctrlKey && e.key === "Enter" && addNote()}
+          />
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <select
+              value={noteType}
+              onChange={(e) => setNoteType(e.target.value)}
+              style={{
+                background: "var(--surface-container-lowest)",
+                border: "1px solid rgba(73,69,82,0.3)",
+                color: "var(--on-surface)",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "var(--radius)",
+                fontSize: "0.8125rem",
+                outline: "none",
+                cursor: "pointer",
+                fontFamily: "var(--font)",
+              }}
+            >
+              <option value="general">General</option>
+              <option value="interview">Interview</option>
+              <option value="feedback">Feedback</option>
+              <option value="followup">Follow-up</option>
+            </select>
+            <button className="notes-add-btn" onClick={addNote}>
+              Add Note
+            </button>
           </div>
+        </div>
 
-          {/* Notes List */}
-          <div className="notes-list">
-            {loading ? (
-              <p className="loading">Loading notes...</p>
-            ) : notes.length > 0 ? (
-              notes.map((note) => (
-                <div key={note.id} className="note-item">
-                  <div className="note-header">
-                    <span className={`note-badge ${note.noteType}`}>{note.noteType}</span>
-                    <span className="note-date">
-                      {new Date(note.createdAt).toLocaleDateString()}
-                    </span>
-                    <button 
-                      className="delete-note-btn"
-                      onClick={() => deleteNote(note.id)}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                  <p className="note-content">{note.noteContent}</p>
+        {/* Notes List */}
+        <div className="notes-list">
+          {loading ? (
+            <p className="notes-loading">Loading notes...</p>
+          ) : notes.length > 0 ? (
+            notes.map((note) => (
+              <div key={note.id} className="note-item">
+                <p className="note-item-text">{note.noteContent}</p>
+                <div className="note-item-footer">
+                  <span className="note-item-date">
+                    {note.noteType} &bull;{" "}
+                    {new Date(note.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <button className="note-delete-btn" onClick={() => deleteNote(note.id)}>
+                    <span className="material-symbols-outlined">delete</span>
+                    Delete
+                  </button>
                 </div>
-              ))
-            ) : (
-              <p className="no-notes">No notes yet. Add your first note!</p>
-            )}
-          </div>
+              </div>
+            ))
+          ) : (
+            <p className="notes-empty">No notes yet. Add your first note above!</p>
+          )}
         </div>
       </div>
     </div>

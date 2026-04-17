@@ -3,18 +3,12 @@ package com.example.demo;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-
 public class AuthController {
+
     private final AuthService authService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -25,10 +19,36 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
+    // Step 1: Register → sends OTP, does NOT return a token yet
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            return ResponseEntity.ok(authService.register(request));
+            authService.register(request);
+            return ResponseEntity.ok(Map.of("message", "OTP sent to " + request.getEmail()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Step 2: Verify OTP → returns JWT token
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
+        try {
+            String email = body.get("email");
+            String otp = body.get("otp");
+            AuthResponse response = authService.verifyOtp(email, otp);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Resend OTP
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestBody Map<String, String> body) {
+        try {
+            authService.resendOtp(body.get("email"));
+            return ResponseEntity.ok(Map.of("message", "OTP resent successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
@@ -39,7 +59,7 @@ public class AuthController {
         try {
             return ResponseEntity.ok(authService.login(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
+            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -48,30 +68,18 @@ public class AuthController {
         if (authHeader == null || authHeader.isEmpty()) {
             return ResponseEntity.status(401).body("No token provided");
         }
-
         String token = jwtService.extractTokenFromHeader(authHeader);
         String email = jwtService.extractEmail(token);
-
-        if (email == null) {
-            return ResponseEntity.status(401).body("Invalid token");
-        }
-
+        if (email == null) return ResponseEntity.status(401).body("Invalid token");
         return ResponseEntity.ok(email);
     }
 
     @GetMapping("/me")
     public ResponseEntity<User> me(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        if (authHeader == null || authHeader.isEmpty()) {
-            return ResponseEntity.status(401).build();
-        }
-
+        if (authHeader == null || authHeader.isEmpty()) return ResponseEntity.status(401).build();
         String token = jwtService.extractTokenFromHeader(authHeader);
         String email = jwtService.extractEmail(token);
-
-        if (email == null) {
-            return ResponseEntity.status(401).build();
-        }
-
+        if (email == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(userRepository.findByEmail(email).orElseThrow());
     }
 }

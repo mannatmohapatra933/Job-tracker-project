@@ -7,7 +7,9 @@ com\example\demo\SecurityBeans.class
 com\example\demo\JobRepository.class
 com\example\demo\CorsConfig.class
 com\example\demo\RegisterRequest.class
+com\example\demo\OtpToken.class
 com\example\demo\DataLoader.class
+com\example\demo\EmailService.class
 com\example\demo\JobNoteRepository.class
 com\example\demo\JwtService.class
 com\example\demo\UserRepository.class
@@ -18,3 +20,4 @@ com\example\demo\AuthResponse.class
 com\example\demo\JobNote.class
 com\example\demo\LoginRequest.class
 com\example\demo\AuthService.class
+com\example\demo\OtpTokenRepository.class

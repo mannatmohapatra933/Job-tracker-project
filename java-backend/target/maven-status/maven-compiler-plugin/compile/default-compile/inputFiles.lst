@@ -1,4 +1,5 @@
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\User.java
+D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\OtpTokenRepository.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\CorsConfig.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JobController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\SecurityConfig.java
@@ -9,12 +10,14 @@ D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\Demo
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JobNote.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\security\JwtFilter.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\SecurityBeans.java
+D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\EmailService.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\LoginRequest.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JobRepository.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JwtService.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\AuthResponse.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\Job.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\AuthController.java
+D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\OtpToken.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\DataLoader.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JobNoteController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\AuthService.java

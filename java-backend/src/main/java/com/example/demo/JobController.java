@@ -230,38 +230,58 @@ public class JobController {
         return repo.save(job);
     }
 
-    // ANALYTICS ENDPOINTS
+    // ANALYTICS ENDPOINTS — all scoped to the authenticated user
+    private User getUserFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
+        String token = authHeader.substring(7);
+        String email = jwtService.extractUsername(token);
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
     @GetMapping("/analytics/by-status")
-    public Map<String, Long> getJobsByStatus() {
-        return repo.findAll().stream()
+    public Map<String, Long> getJobsByStatus(HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return Map.of();
+        return repo.findByUser(user).stream()
+            .filter(j -> j.getStatus() != null)
             .collect(Collectors.groupingBy(Job::getStatus, Collectors.counting()));
     }
 
     @GetMapping("/analytics/summary")
-    public Map<String, Object> getAnalyticsSummary() {
-        List<Job> allJobs = repo.findAll();
+    public Map<String, Object> getAnalyticsSummary(HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return Map.of();
+        List<Job> userJobs = repo.findByUser(user);
         Map<String, Object> summary = new HashMap<>();
 
-        summary.put("totalJobs", allJobs.size());
-        summary.put("totalApplications", allJobs.stream().filter(j -> "Applied".equals(j.getStatus())).count());
-        summary.put("interviews", allJobs.stream().filter(j -> "Interview".equals(j.getStatus()) || "Interview Scheduled".equals(j.getStatus())).count());
-        summary.put("offers", allJobs.stream().filter(j -> "Offer".equals(j.getStatus())).count());
-        summary.put("rejected", allJobs.stream().filter(j -> "Rejected".equals(j.getStatus())).count());
-        summary.put("wishlisted", allJobs.stream().filter(Job::isWishlisted).count());
-        summary.put("offerRate", !allJobs.isEmpty() ? ((double) summary.get("offers") / allJobs.size() * 100) : 0);
+        long offers = userJobs.stream().filter(j -> "Offer".equals(j.getStatus())).count();
+        summary.put("totalJobs", userJobs.size());
+        summary.put("totalApplications", userJobs.stream().filter(j -> "Applied".equals(j.getStatus())).count());
+        summary.put("interviews", userJobs.stream().filter(j -> "Interview".equals(j.getStatus()) || "Interview Scheduled".equals(j.getStatus())).count());
+        summary.put("offers", offers);
+        summary.put("rejected", userJobs.stream().filter(j -> "Rejected".equals(j.getStatus())).count());
+        summary.put("wishlisted", userJobs.stream().filter(Job::isWishlisted).count());
+        summary.put("offerRate", !userJobs.isEmpty() ? ((double) offers / userJobs.size() * 100) : 0);
 
         return summary;
     }
 
     @GetMapping("/analytics/by-company")
-    public Map<String, Long> getJobsByCompanyCount() {
-        return repo.findAll().stream()
+    public Map<String, Long> getJobsByCompanyCount(HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return Map.of();
+        return repo.findByUser(user).stream()
+            .filter(j -> j.getCompany() != null)
             .collect(Collectors.groupingBy(Job::getCompany, Collectors.counting()));
     }
 
     @GetMapping("/analytics/by-experience")
-    public Map<String, Long> getJobsByExperienceCount() {
-        return repo.findAll().stream()
+    public Map<String, Long> getJobsByExperienceCount(HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return Map.of();
+        return repo.findByUser(user).stream()
+            .filter(j -> j.getExperienceLevel() != null)
             .collect(Collectors.groupingBy(Job::getExperienceLevel, Collectors.counting()));
     }
 
