@@ -16,19 +16,24 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendOtpEmail(String toEmail, String otp) throws MessagingException {
+    public void sendOtpEmail(String toEmail, String otp) {
         if (mailSender == null) {
             System.out.println("⚠️ Mail not configured. OTP for " + toEmail + ": " + otp);
             return;
         }
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setTo(toEmail);
-        helper.setSubject("JobFlow AI — Your Verification Code");
-        helper.setText(buildEmailHtml(otp), true);
+            helper.setTo(toEmail);
+            helper.setSubject("JobFlow AI — Your Verification Code");
+            helper.setText(buildEmailHtml(otp), true);
 
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("❌ Failed to send real email: " + e.getMessage());
+            System.out.println("⚠️ FALLBACK: OTP for " + toEmail + ": " + otp);
+        }
     }
 
     private String buildEmailHtml(String otp) {

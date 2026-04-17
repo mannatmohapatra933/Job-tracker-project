@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import jakarta.mail.MessagingException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,10 +115,6 @@ public class AuthService {
         OtpToken otpToken = new OtpToken(email, otp, LocalDateTime.now().plusMinutes(10));
         otpTokenRepository.save(otpToken);
 
-        try {
-            emailService.sendOtpEmail(email, otp);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send OTP email. Please try again.");
-        }
+        emailService.sendOtpEmail(email, otp);
     }
 }
