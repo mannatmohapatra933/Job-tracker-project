@@ -11,13 +11,19 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final boolean isStrict;
 
-    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender,
+                        @org.springframework.beans.factory.annotation.Value("${app.email.strict:true}") boolean isStrict) {
         this.mailSender = mailSender;
+        this.isStrict = isStrict;
     }
 
     public void sendOtpEmail(String toEmail, String otp) {
         if (mailSender == null) {
+            if (isStrict) {
+                throw new RuntimeException("Email service is not configured.");
+            }
             System.out.println("⚠️ Mail not configured. OTP for " + toEmail + ": " + otp);
             return;
         }
@@ -31,6 +37,9 @@ public class EmailService {
 
             mailSender.send(message);
         } catch (Exception e) {
+            if (isStrict) {
+                throw new RuntimeException("Failed to send verification email. Please check your email address or try again later.");
+            }
             System.err.println("❌ Failed to send real email: " + e.getMessage());
             System.out.println("⚠️ FALLBACK: OTP for " + toEmail + ": " + otp);
         }
