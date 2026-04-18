@@ -30,7 +30,12 @@ public class DatabaseConfig {
             URI dbUri = new URI(databaseUrl);
             String username = dbUri.getUserInfo().split(":")[0];
             String password = dbUri.getUserInfo().split(":")[1];
-            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ":" + dbUri.getPort() + dbUri.getPath();
+            
+            int port = dbUri.getPort();
+            String host = dbUri.getHost();
+            String path = dbUri.getPath();
+            // If port is -1, we omit it from the JDBC URL so the driver uses the default (5432)
+            String dbUrl = "jdbc:postgresql://" + host + (port == -1 ? "" : ":" + port) + path;
 
             config.setJdbcUrl(dbUrl);
             config.setUsername(username);
