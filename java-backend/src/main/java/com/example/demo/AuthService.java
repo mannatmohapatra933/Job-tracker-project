@@ -106,6 +106,39 @@ public class AuthService {
         return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName());
     }
 
+    // Initiate Password Reset (Send OTP)
+    @Transactional
+    public void initiatePasswordReset(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("No account found with this email."));
+        
+        if (!user.isVerified()) {
+            throw new RuntimeException("Account is not verified. Please verify your account first.");
+        }
+
+        sendOtp(email);
+    }
+
+    // Complete Password Reset
+    @Transactional
+    public void completePasswordReset(String email, String otp, String newPassword) {
+        OtpToken token = otpTokenRepository.findTopByEmailOrderByIdDesc(email)
+                .orElseThrow(() -> new RuntimeException("No OTP found for this email."));
+
+        if (token.isUsed() || LocalDateTime.now().isAfter(token.getExpiresAt()) || !token.getOtp().equals(otp)) {
+            throw new RuntimeException("Invalid or expired OTP.");
+        }
+
+        token.setUsed(true);
+        otpTokenRepository.save(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+        
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     // Internal helper to generate and send OTP
     private void sendOtp(String email) {
         // Delete any old OTPs for this email

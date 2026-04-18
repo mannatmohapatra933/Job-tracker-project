@@ -21,3 +21,4 @@ com\example\demo\User.class
 com\example\demo\AuthController.class
 com\example\demo\LoginRequest.class
 com\example\demo\AuthService.class
+com\example\demo\DatabaseConfig.class

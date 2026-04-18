@@ -82,4 +82,24 @@ public class AuthController {
         if (email == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(userRepository.findByEmail(email).orElseThrow());
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        try {
+            authService.initiatePasswordReset(body.get("email"));
+            return ResponseEntity.ok(Map.of("message", "Reset OTP sent to your email."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        try {
+            authService.completePasswordReset(body.get("email"), body.get("otp"), body.get("newPassword"));
+            return ResponseEntity.ok(Map.of("message", "Password reset successful. Please login."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
 }
