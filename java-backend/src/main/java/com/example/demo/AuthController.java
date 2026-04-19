@@ -102,4 +102,10 @@ public class AuthController {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/system/stats")
+    public ResponseEntity<?> getSystemStats() {
+        long count = userRepository.count();
+        return ResponseEntity.ok(Map.of("totalUsers", count));
+    }
 }

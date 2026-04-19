@@ -27,6 +27,7 @@ export default function Analytics({ showAnalytics, jobs = [] }) {
   const [byCompany, setByCompany] = useState({});
   const [byExperience, setByExperience] = useState({});
   const [loading, setLoading] = useState(true);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   useEffect(() => {
     if (showAnalytics) fetchAnalytics();
@@ -36,16 +37,18 @@ export default function Analytics({ showAnalytics, jobs = [] }) {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const [summaryRes, statusRes, companyRes, expRes] = await Promise.all([
+      const [summaryRes, statusRes, companyRes, expRes, statsRes] = await Promise.all([
         axios.get(`${API_URL}/analytics/summary`, { headers: getHeaders() }),
         axios.get(`${API_URL}/analytics/by-status`, { headers: getHeaders() }),
         axios.get(`${API_URL}/analytics/by-company`, { headers: getHeaders() }),
         axios.get(`${API_URL}/analytics/by-experience`, { headers: getHeaders() }),
+        axios.get(`${(process.env.REACT_APP_API_URL || "").replace("/api", "")}/auth/system/stats`, { headers: getHeaders() }),
       ]);
       setStats(summaryRes.data);
       setByStatus(statusRes.data);
       setByCompany(companyRes.data);
       setByExperience(expRes.data);
+      setTotalUsers(statsRes.data.totalUsers);
     } catch (err) {
       console.error("Error fetching analytics:", err);
       // Fallback: compute from props if API fails
@@ -185,6 +188,18 @@ export default function Analytics({ showAnalytics, jobs = [] }) {
             </div>
             <div className="metric-card-value">{effectiveStats.wishlisted}</div>
             <div className="metric-card-sub">Saved jobs</div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-card-bg">
+              <span className="material-symbols-outlined">groups</span>
+            </div>
+            <div className="metric-card-tag" style={{ color: "#a78bfa" }}>
+              <span className="material-symbols-outlined">person</span>
+              Total Users
+            </div>
+            <div className="metric-card-value">{totalUsers}</div>
+            <div className="metric-card-sub">Registered members</div>
           </div>
         </div>
       )}
