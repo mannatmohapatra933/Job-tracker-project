@@ -19,6 +19,7 @@ public class EmailService {
         this.isStrict = isStrict;
     }
 
+    @org.springframework.scheduling.annotation.Async
     public void sendOtpEmail(String toEmail, String otp) {
         if (mailSender == null) {
             if (isStrict) {

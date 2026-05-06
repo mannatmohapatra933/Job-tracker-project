@@ -63,11 +63,14 @@ function App() {
     if (isAuthenticated) {
       const initData = async () => {
         try {
-          const data = await getJobs();
-          setJobs(data);
-          await fetchFilters();
+          // Fetch jobs and filters in parallel for maximum speed
+          const [jobsData] = await Promise.all([
+            getJobs(),
+            fetchFilters()
+          ]);
+          setJobs(jobsData);
         } catch (err) {
-          console.error(err);
+          console.error("Initial data load error:", err);
         }
       };
       initData();
@@ -130,17 +133,19 @@ function App() {
 
   const fetchFilters = async () => {
     try {
-      const companiesRes = await axios.get(`${API_URL}/filters/companies`);
+      // Fetch all filters in parallel to save time
+      const [companiesRes, expRes, locRes] = await Promise.all([
+        axios.get(`${API_URL}/filters/companies`),
+        axios.get(`${API_URL}/filters/experience-levels`),
+        axios.get(`${API_URL}/filters/locations`)
+      ]);
+
       setCompanies(companiesRes.data || []);
-    } catch (err) { console.error(err); }
-    try {
-      const expRes = await axios.get(`${API_URL}/filters/experience-levels`);
       setExperienceLevels(expRes.data || []);
-    } catch (err) { console.error(err); }
-    try {
-      const locRes = await axios.get(`${API_URL}/filters/locations`);
       setLocations(locRes.data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Error fetching filters:", err);
+    }
   };
 
   const handleWishlist = async (id) => {
@@ -153,12 +158,11 @@ function App() {
     setShowNotes(true);
   };
 
-  const handleLoginSuccess = async () => {
+  const handleLoginSuccess = () => {
     setIsAuthenticated(true);
     setUserEmail(localStorage.getItem("userEmail") || "");
     setShowRegister(false);
-    await fetchJobs();
-    fetchFilters();
+    // Data fetching is now handled by the useEffect [isAuthenticated]
   };
 
   const handleLogout = () => {
