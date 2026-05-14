@@ -25,9 +25,11 @@ public class AuthController {
         try {
             authService.register(request);
             return ResponseEntity.ok(Map.of("message", "OTP sent to " + request.getEmail()));
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
+
     }
 
     // Step 2: Verify OTP → returns JWT token
@@ -58,9 +60,11 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             return ResponseEntity.ok(authService.login(request));
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         }
+
     }
 
     @GetMapping("/validate")
