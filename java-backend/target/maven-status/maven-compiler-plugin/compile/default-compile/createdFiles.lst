@@ -1,4 +1,5 @@
 com\example\demo\DemoApplication.class
+com\example\demo\AiController.class
 com\example\demo\JobController.class
 com\example\demo\SecurityBeans.class
 com\example\demo\RegisterRequest.class

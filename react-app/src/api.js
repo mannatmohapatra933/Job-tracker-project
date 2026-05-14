@@ -38,3 +38,16 @@ export const toggleWishlist = async (id) => {
   });
   return res.json();
 };
+
+export const matchResume = async (prompt) => {
+  const res = await fetch(`${API_BASE_URL}/ai/match`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error?.message || errBody.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+};

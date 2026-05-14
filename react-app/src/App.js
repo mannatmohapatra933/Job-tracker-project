@@ -8,6 +8,7 @@ import Login from "./Login";
 import Register from "./Register";
 import AddJob from "./AddJob";
 import Settings from "./Settings";
+import AIMatch from "./AIMatch";
 import { getJobs, toggleWishlist } from "./api";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./NotFound";
@@ -489,6 +490,7 @@ function App() {
             { view: "jobs", icon: "work", label: "Applications" },
             { view: "analytics", icon: "analytics", label: "Insights" },
             { view: "wishlist", icon: "bookmark", label: "Wishlist" },
+            { view: "ai-match", icon: "auto_awesome", label: "AI Match" },
           ].map(({ view, icon, label }) => (
             <button
               key={view}
@@ -593,6 +595,14 @@ function App() {
           {activeView === "jobs" && <JobsView />}
           {activeView === "analytics" && <Analytics showAnalytics={true} jobs={jobs} />}
           {activeView === "wishlist" && <WishlistView />}
+          {activeView === "ai-match" && (
+            <AIMatch
+              jobs={jobs}
+              onJobSaved={(id) => {
+                setJobs(jobs.map((j) => j.id === id ? { ...j, wishlisted: true } : j));
+              }}
+            />
+          )}
           {activeView === "settings" && (
             <Settings
               onLogout={handleLogout}
@@ -613,7 +623,7 @@ function App() {
         {[
           { view: "dashboard", icon: "dashboard", label: "Home" },
           { view: "jobs", icon: "work", label: "Jobs" },
-          { view: "analytics", icon: "analytics", label: "Insights" },
+          { view: "ai-match", icon: "auto_awesome", label: "AI Match" },
           { view: "wishlist", icon: "bookmark", label: "Saved" },
           { view: "settings", icon: "settings", label: "Settings" },
         ].map(({ view, icon, label }) => (
