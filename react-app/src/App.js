@@ -9,7 +9,7 @@ import Register from "./Register";
 import AddJob from "./AddJob";
 import Settings from "./Settings";
 import AIMatch from "./AIMatch";
-import { getJobs, toggleWishlist } from "./api";
+import { toggleWishlist } from "./api";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./NotFound";
 
