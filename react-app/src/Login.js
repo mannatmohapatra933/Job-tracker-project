@@ -18,6 +18,13 @@ export default function Login({ onLoginSuccess, setShowRegister }) {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  // Pre-warm server on mount
+  React.useEffect(() => {
+    axios.get(`${(process.env.REACT_APP_API_URL || "").replace("/api", "")}/api/dashboard/ping`)
+      .catch(() => {}); // Ignore errors, just want to wake up the server
+  }, []);
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");

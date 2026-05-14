@@ -53,6 +53,8 @@ function App() {
   const [showAddJob, setShowAddJob] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [selectedJobIdForNotes, setSelectedJobIdForNotes] = useState(null);
+  const [initLoading, setInitLoading] = useState(false);
+
 
   // STEP 3: Notifications
   const [showNotif, setShowNotif] = useState(false);
@@ -63,21 +65,28 @@ function App() {
   useEffect(() => {
     if (isAuthenticated) {
       const initData = async () => {
+        setInitLoading(true);
         try {
-          // Fetch jobs and filters in parallel for maximum speed
-          const [jobsData] = await Promise.all([
-            getJobs(),
-            fetchFilters()
-          ]);
-          setJobs(jobsData);
+          // One single call for everything! 🚀
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/dashboard/all`);
+          const { jobs: jobsData, companies, locations, experienceLevels } = res.data;
+          
+          setJobs(jobsData || []);
+          setCompanies(companies || []);
+          setLocations(locations || []);
+          setExperienceLevels(experienceLevels || []);
         } catch (err) {
           console.error("Initial data load error:", err);
+        } finally {
+          // Minimal delay for smooth transition
+          setTimeout(() => setInitLoading(false), 500);
         }
       };
       initData();
     }
     // eslint-disable-next-line
   }, [isAuthenticated]);
+
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -527,6 +536,8 @@ function App() {
       <main className="main-content">
         {/* Header */}
         <header className="top-header">
+          {/* ... existing header code ... */}
+
           <div className="header-search">
             <span className="material-symbols-outlined">search</span>
             <input
@@ -589,8 +600,18 @@ function App() {
           </div>
         </header>
 
-        {/* Content */}
-        <div className="content-area">
+        {/* Content Area with Loading Overlay */}
+        <div className="content-area" style={{ position: "relative" }}>
+          {initLoading && (
+            <div className="init-loading-overlay">
+              <div className="init-loading-content">
+                <div className="init-spinner"></div>
+                <div className="init-loading-text">Analyzing Pipeline...</div>
+                <div className="init-loading-sub">Optimizing your job flow</div>
+              </div>
+            </div>
+          )}
+          
           {activeView === "dashboard" && <DashboardView />}
           {activeView === "jobs" && <JobsView />}
           {activeView === "analytics" && <Analytics showAnalytics={true} jobs={jobs} />}
@@ -611,6 +632,7 @@ function App() {
             />
           )}
         </div>
+
       </main>
 
       {/* FAB */}
