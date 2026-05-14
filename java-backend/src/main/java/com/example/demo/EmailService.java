@@ -11,13 +11,14 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-    private final boolean isStrict;
+    private final String fromEmail;
 
     public EmailService(@Autowired(required = false) JavaMailSender mailSender,
-                        @org.springframework.beans.factory.annotation.Value("${app.email.strict:true}") boolean isStrict) {
+                        @org.springframework.beans.factory.annotation.Value("${spring.mail.username}") String fromEmail) {
         this.mailSender = mailSender;
-        this.isStrict = isStrict;
+        this.fromEmail = fromEmail;
     }
+
 
     public void sendOtpEmail(String toEmail, String otp) {
         if (mailSender == null) {
@@ -27,7 +28,9 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom(fromEmail);
             helper.setTo(toEmail);
+
             helper.setSubject("JobFlow AI — Your Verification Code");
             helper.setText(buildEmailHtml(otp), true);
 
