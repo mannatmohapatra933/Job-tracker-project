@@ -6,42 +6,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
 
 @Service
 public class EmailService {
 
     private final JavaMailSender mailSender;
-    private final String fromEmail;
+    
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
+    private String fromEmail;
 
-    public EmailService(@Autowired(required = false) JavaMailSender mailSender,
-                        @org.springframework.beans.factory.annotation.Value("${spring.mail.username}") String fromEmail) {
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
         this.mailSender = mailSender;
-        this.fromEmail = fromEmail;
     }
 
-
+    @Async
     public void sendOtpEmail(String toEmail, String otp) {
-        if (mailSender == null) {
-            throw new RuntimeException("Critical: JavaMailSender is null. Check your dependencies and properties.");
-        }
+        if (mailSender == null) return;
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-
             helper.setSubject("JobFlow AI — Your Verification Code");
             helper.setText(buildEmailHtml(otp), true);
 
             mailSender.send(message);
-            System.out.println("✅ Email sent successfully to: " + toEmail);
         } catch (Exception e) {
-            System.err.println("❌ Email Error: " + e.getMessage());
-            throw new RuntimeException("SMTP Error: " + e.getMessage());
+            System.err.println("❌ Failed to send email: " + e.getMessage());
         }
     }
-
 
     private String buildEmailHtml(String otp) {
         return """
