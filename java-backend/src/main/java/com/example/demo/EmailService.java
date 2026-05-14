@@ -21,11 +21,7 @@ public class EmailService {
 
     public void sendOtpEmail(String toEmail, String otp) {
         if (mailSender == null) {
-            if (isStrict) {
-                throw new RuntimeException("Email service is not configured.");
-            }
-            System.out.println("⚠️ Mail not configured. OTP for " + toEmail + ": " + otp);
-            return;
+            throw new RuntimeException("Critical: JavaMailSender is null. Check your dependencies and properties.");
         }
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -36,14 +32,13 @@ public class EmailService {
             helper.setText(buildEmailHtml(otp), true);
 
             mailSender.send(message);
+            System.out.println("✅ Email sent successfully to: " + toEmail);
         } catch (Exception e) {
-            if (isStrict) {
-                throw new RuntimeException("Failed to send verification email. Please check your email address or try again later.");
-            }
-            System.err.println("❌ Failed to send real email: " + e.getMessage());
-            System.out.println("⚠️ FALLBACK: OTP for " + toEmail + ": " + otp);
+            System.err.println("❌ Email Error: " + e.getMessage());
+            throw new RuntimeException("SMTP Error: " + e.getMessage());
         }
     }
+
 
     private String buildEmailHtml(String otp) {
         return """
