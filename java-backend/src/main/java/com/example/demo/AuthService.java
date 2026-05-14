@@ -26,20 +26,21 @@ public class AuthService {
         this.emailService = emailService;
     }
 
-    // Step 1: Register — save unverified user and send OTP
     @Transactional
     public void register(RegisterRequest request) {
+        System.out.println("DEBUG: Register request received for: " + request.getEmail());
         if (userRepository.existsByEmail(request.getEmail())) {
-            // If user exists but is unverified, allow re-registration by resending OTP
+            System.out.println("DEBUG: User exists, checking verification status...");
             User existing = userRepository.findByEmail(request.getEmail()).orElseThrow();
             if (existing.isVerified()) {
                 throw new RuntimeException("Email already registered. Please login.");
             }
-            // Re-send OTP for unverified user
+            System.out.println("DEBUG: User unverified, resending OTP...");
             sendOtp(request.getEmail());
             return;
         }
 
+        System.out.println("DEBUG: Creating new user...");
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -47,10 +48,10 @@ public class AuthService {
         user.setVerified(false);
         userRepository.save(user);
 
+        System.out.println("DEBUG: User saved, calling sendOtp...");
         sendOtp(request.getEmail());
     }
 
-    // Step 2: Verify OTP — mark user verified and return JWT
     @Transactional
     public AuthResponse verifyOtp(String email, String otp) {
         OtpToken token = otpTokenRepository.findTopByEmailOrderByIdDesc(email)
@@ -66,11 +67,9 @@ public class AuthService {
             throw new RuntimeException("Invalid OTP. Please check your email.");
         }
 
-        // Mark OTP as used
         token.setUsed(true);
         otpTokenRepository.save(token);
 
-        // Mark user as verified
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found."));
         user.setVerified(true);
@@ -80,7 +79,6 @@ public class AuthService {
         return new AuthResponse(jwtToken, user.getId(), user.getEmail(), user.getFullName());
     }
 
-    // Resend OTP
     @Transactional
     public void resendOtp(String email) {
         if (!userRepository.existsByEmail(email)) {
@@ -89,7 +87,6 @@ public class AuthService {
         sendOtp(email);
     }
 
-    // Login
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -106,7 +103,6 @@ public class AuthService {
         return new AuthResponse(token, user.getId(), user.getEmail(), user.getFullName());
     }
 
-    // Initiate Password Reset (Send OTP)
     @Transactional
     public void initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email)
@@ -119,7 +115,6 @@ public class AuthService {
         sendOtp(email);
     }
 
-    // Complete Password Reset
     @Transactional
     public void completePasswordReset(String email, String otp, String newPassword) {
         OtpToken token = otpTokenRepository.findTopByEmailOrderByIdDesc(email)
@@ -139,15 +134,22 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    // Internal helper to generate and send OTP
     private void sendOtp(String email) {
-        // Delete any old OTPs for this email
-        otpTokenRepository.deleteByEmail(email);
+        System.out.println("DEBUG: Inside sendOtp for: " + email);
+        try {
+            otpTokenRepository.deleteByEmail(email);
+            System.out.println("DEBUG: Old OTPs deleted.");
+        } catch (Exception e) {
+            System.out.println("DEBUG: Delete OTP failed (might be none): " + e.getMessage());
+        }
 
         String otp = String.format("%06d", new Random().nextInt(999999));
         OtpToken otpToken = new OtpToken(email, otp, LocalDateTime.now().plusMinutes(10));
         otpTokenRepository.save(otpToken);
+        System.out.println("DEBUG: New OTP saved: " + otp);
 
+        System.out.println("DEBUG: Calling emailService.sendOtpEmail...");
         emailService.sendOtpEmail(email, otp);
+        System.out.println("DEBUG: emailService.sendOtpEmail finished.");
     }
 }
