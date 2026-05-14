@@ -4,7 +4,7 @@ import { toggleWishlist, matchResume } from "./api";
 import * as pdfjsLib from "pdfjs-dist";
 
 // Use the bundled worker from public folder (local, no CDN dependency)
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 function AIMatch({ jobs = [], onJobSaved }) {
   const [resumeText, setResumeText] = useState("");
@@ -176,8 +176,9 @@ REQUIRED JSON FORMAT:
       if (e.message.includes("API_KEY") || e.message.includes("key")) {
         setError("Invalid API key. Check your REACT_APP_GEMINI_API_KEY in .env file.");
       } else {
-        // Show exactly what the error is
-        setError(`Error: ${e.message}`);
+        // Show exactly what the error is and which URL was hit
+        const apiUrl = process.env.REACT_APP_API_URL || "unknown";
+        setError(`Error: ${e.message} (URL: ${apiUrl}/ai/match)`);
       }
     } finally {
       setLoading(false);
