@@ -55,8 +55,15 @@ public class DatabaseConfig {
                 username = userInfo.substring(0, firstColon);
                 password = userInfo.substring(firstColon + 1);  // preserves '@' in password
             }
-
-            config.setJdbcUrl("jdbc:postgresql://" + hostPart);
+            // Build JDBC URL with SSL required for Supabase
+            String jdbcUrl = "jdbc:postgresql://" + hostPart;
+            // Append SSL mode directly to URL (reliable for PostgreSQL JDBC driver)
+            if (hostPart.contains("?")) {
+                jdbcUrl += "&sslmode=require";
+            } else {
+                jdbcUrl += "?sslmode=require";
+            }
+            config.setJdbcUrl(jdbcUrl);
             config.setUsername(username);
             config.setPassword(password);
         }
