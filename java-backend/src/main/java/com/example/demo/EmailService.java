@@ -3,6 +3,7 @@ package com.example.demo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     
-    @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
+    @Value("${spring.mail.username:}")
     private String fromEmail;
 
     public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
@@ -22,19 +23,33 @@ public class EmailService {
 
     @Async
     public void sendOtpEmail(String toEmail, String otp) {
-        if (mailSender == null) return;
+        // ALWAYS PRINT OTP TO LOGS SO USER CAN SEE IT WITHOUT EMAIL
+        System.out.println("******************************************");
+        System.out.println("🚀 SECURITY OTP FOR " + toEmail + " IS: " + otp);
+        System.out.println("******************************************");
+
+        if (mailSender == null) {
+            System.err.println("❌ JavaMailSender is null! Check your configuration.");
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromEmail);
+            if (fromEmail != null && !fromEmail.isEmpty()) {
+                helper.setFrom(fromEmail);
+            }
+            
             helper.setTo(toEmail);
             helper.setSubject("JobFlow AI — Your Verification Code");
             helper.setText(buildEmailHtml(otp), true);
 
             mailSender.send(message);
+            System.out.println("✅ Email sent successfully to: " + toEmail);
         } catch (Exception e) {
-            System.err.println("❌ Failed to send email: " + e.getMessage());
+            System.err.println("❌ Failed to send real email: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
