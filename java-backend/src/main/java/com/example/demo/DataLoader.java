@@ -12,8 +12,12 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Clear existing data
-        jobRepository.deleteAll();
+        // Only load seed data if the database is empty
+        // This prevents wiping user-added jobs on every backend restart
+        if (jobRepository.count() > 0) {
+            System.out.println("✓ Jobs already exist in DB, skipping seed data.");
+            return;
+        }
 
         // Google Jobs
         createJob("Google", "https://google.com", "Software Engineer", "Bachelors in CS", "0-2", 
