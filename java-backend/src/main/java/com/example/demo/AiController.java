@@ -26,11 +26,13 @@ public class AiController {
 
     @PostMapping("/match")
     public ResponseEntity<?> matchResume(@RequestBody Map<String, Object> payload) {
-        if (geminiApiKey == null || geminiApiKey.isEmpty() || geminiApiKey.equals("your_gemini_api_key_here")) {
-            return ResponseEntity.status(500).body("{\"error\": \"Gemini API key is not configured in backend properties.\"}");
+        String cleanApiKey = geminiApiKey.trim().replaceAll("\\s+", "");
+        
+        if (cleanApiKey.isEmpty() || cleanApiKey.equals("dummy_key") || cleanApiKey.equals("your_gemini_api_key_here")) {
+            return ResponseEntity.status(500).body("{\"error\": \"Gemini API key is not configured or is invalid.\"}");
         }
         
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + cleanApiKey;
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -41,9 +43,12 @@ public class AiController {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            System.err.println("Google API Error: " + e.getResponseBodyAsString());
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("{\"error\": {\"message\": \"" + e.getMessage() + "\"}}");
+            System.err.println("Internal AI Match Error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("{\"error\": {\"message\": \"Internal Server Error: " + e.getMessage() + "\"}}");
         }
     }
 }
