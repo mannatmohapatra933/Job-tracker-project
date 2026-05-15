@@ -31,7 +31,7 @@ public class AiController {
             return ResponseEntity.status(500).body("{\"error\": \"Gemini API key is not configured or is invalid.\"}");
         }
         
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + cleanApiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + cleanApiKey;
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
