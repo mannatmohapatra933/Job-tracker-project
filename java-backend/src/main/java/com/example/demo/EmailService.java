@@ -24,9 +24,7 @@ public class EmailService {
     @Async
     public void sendOtpEmail(String toEmail, String otp) {
         // ALWAYS PRINT OTP TO LOGS SO USER CAN SEE IT WITHOUT EMAIL
-        System.out.println("******************************************");
-        System.out.println("🚀 SECURITY OTP FOR " + toEmail + " IS: " + otp);
-        System.out.println("******************************************");
+        System.out.println("DEBUG: Preparing to send email to " + toEmail);
 
         if (mailSender == null) {
             System.err.println("❌ JavaMailSender is null! Check your configuration.");

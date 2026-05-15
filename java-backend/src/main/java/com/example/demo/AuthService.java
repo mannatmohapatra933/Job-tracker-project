@@ -146,10 +146,12 @@ public class AuthService {
         String otp = String.format("%06d", new Random().nextInt(999999));
         OtpToken otpToken = new OtpToken(email, otp, LocalDateTime.now().plusMinutes(10));
         otpTokenRepository.save(otpToken);
-        System.out.println("DEBUG: New OTP saved: " + otp);
+        System.out.println("DEBUG: New OTP generated for " + email);
+
 
         System.out.println("DEBUG: Calling emailService.sendOtpEmail...");
         emailService.sendOtpEmail(email, otp);
         System.out.println("DEBUG: emailService.sendOtpEmail finished.");
     }
+
 }
