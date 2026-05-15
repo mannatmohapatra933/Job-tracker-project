@@ -31,7 +31,7 @@ public class AiController {
             return ResponseEntity.status(500).body("{\"error\": \"Gemini API key is not configured or is invalid.\"}");
         }
         
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + cleanApiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + cleanApiKey;
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -42,8 +42,14 @@ public class AiController {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            System.err.println("Google API Error: " + e.getResponseBodyAsString());
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+            String body = e.getResponseBodyAsString();
+            if (body != null && body.contains("Quota exceeded")) {
+                String msg = "Gemini quota exceeded. Please check your Google Cloud billing or switch to a model with available quota.";
+                System.err.println(msg);
+                return ResponseEntity.status(429).body("{\"error\": \"" + msg + "\"}");
+            }
+            System.err.println("Google API Error: " + body);
+            return ResponseEntity.status(e.getStatusCode()).body(body);
         } catch (Exception e) {
             System.err.println("Internal AI Match Error: " + e.getMessage());
             e.printStackTrace();
