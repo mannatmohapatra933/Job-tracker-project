@@ -26,7 +26,7 @@ public class AiController {
 
     @PostMapping("/match")
     public ResponseEntity<?> matchResume(@RequestBody Map<String, Object> payload) {
-        String cleanApiKey = geminiApiKey.trim().replaceAll("\\s+", "");
+        String cleanApiKey = geminiApiKey == null ? "" : geminiApiKey.trim().replaceAll("\\s+", "");
         
         if (cleanApiKey.isEmpty() || cleanApiKey.equals("dummy_key") || cleanApiKey.equals("your_gemini_api_key_here")) {
             return ResponseEntity.status(500).body("{\"error\": \"Gemini API key is not configured or is invalid.\"}");
