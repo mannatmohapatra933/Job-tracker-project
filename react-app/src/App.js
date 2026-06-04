@@ -70,7 +70,7 @@ function App() {
           // One single call for everything! 🚀
           const res = await axios.get(`${process.env.REACT_APP_API_URL}/dashboard/all`);
           const { jobs: jobsData, companies, locations, experienceLevels } = res.data;
-          
+
           setJobs(jobsData || []);
           setCompanies(companies || []);
           setLocations(locations || []);
@@ -611,7 +611,7 @@ function App() {
               </div>
             </div>
           )}
-          
+
           {activeView === "dashboard" && <DashboardView />}
           {activeView === "jobs" && <JobsView />}
           {activeView === "analytics" && <Analytics showAnalytics={true} jobs={jobs} />}
