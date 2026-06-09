@@ -39,11 +39,17 @@ export const toggleWishlist = async (id) => {
   return res.json();
 };
 
-export const matchResume = async (prompt) => {
+export const matchResume = async (prompt, useSearch = false) => {
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  
+  if (useSearch) {
+    payload.tools = [{ googleSearch: {} }];
+  }
+
   const res = await fetch(`${API_BASE_URL}/ai/match`, {
     method: "POST",
     headers: getHeaders(),
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));

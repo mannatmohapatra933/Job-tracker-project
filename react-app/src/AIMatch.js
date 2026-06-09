@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
 import "./AIMatch.css";
-import { toggleWishlist, matchResume } from "./api";
+import { toggleWishlist, matchResume, addJob } from "./api";
 import * as pdfjsLib from "pdfjs-dist";
 
 // Use the bundled worker from public folder (local, no CDN dependency)
@@ -18,6 +18,7 @@ function AIMatch({ jobs = [], onJobSaved }) {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef(null);
+  const [useLiveSearch, setUseLiveSearch] = useState(false);
 
   // ---- PDF text extraction ----
   const extractPdfText = async (file) => {
@@ -96,14 +97,41 @@ function AIMatch({ jobs = [], onJobSaved }) {
       // Limit resume text to avoid token overflow causing truncated AI responses
       const safeResumeText = resumeText.substring(0, 15000);
 
-      const jobsList = jobs
-        .map(
-          (j, i) =>
-            `${i + 1}. ID:${j.id} | Company: ${j.company} | Role: ${j.role} | Skills: ${j.jobDescription || ""}`
-        )
-        .join("\n");
+      let prompt = "";
+      if (useLiveSearch) {
+        prompt = `You are a career advisor. Search the internet for active, real-time job openings that exactly match this candidate's profile.
+Return ONLY a valid JSON object. Do not include markdown formatting or extra text.
+RESUME:
+"""
+${safeResumeText}
+"""
 
-      const prompt = `You are a career advisor. Return ONLY a valid JSON object. Do not include markdown formatting or extra text.
+REQUIRED JSON FORMAT:
+{
+  "summary": "2 sentence overall analysis",
+  "matches": [
+    {
+      "id": "generate_a_random_unique_string",
+      "company": "Company Name",
+      "role": "Job Title",
+      "location": "Job Location",
+      "experienceLevel": "Experience required",
+      "salary": "Estimated Salary or N/A",
+      "applicationLink": "Exact URL to apply for this job post",
+      "score": <number 0-100>,
+      "reason": "1 sentence reason why it matches"
+    }
+  ]
+}`;
+      } else {
+        const jobsList = jobs
+          .map(
+            (j, i) =>
+              `${i + 1}. ID:${j.id} | Company: ${j.company} | Role: ${j.role} | Skills: ${j.jobDescription || ""}`
+          )
+          .join("\n");
+
+        prompt = `You are a career advisor. Return ONLY a valid JSON object. Do not include markdown formatting or extra text.
 RESUME:
 """
 ${safeResumeText}
@@ -122,8 +150,9 @@ REQUIRED JSON FORMAT:
     }
   ]
 }`;
+      }
 
-      const data = await matchResume(prompt);
+      const data = await matchResume(prompt, useLiveSearch);
       
       // Combine all parts just in case response is split
       const parts = data?.candidates?.[0]?.content?.parts || [];
@@ -162,12 +191,21 @@ REQUIRED JSON FORMAT:
 
       setSummary(parsed.summary || "");
 
-      const matchedJobs = (parsed.matches || [])
-        .map((m) => {
-          const job = jobs.find((j) => j.id === m.jobId);
-          return job ? { ...job, score: m.score, reason: m.reason } : null;
-        })
-        .filter(Boolean);
+      let matchedJobs = [];
+      if (useLiveSearch) {
+        matchedJobs = (parsed.matches || []).map(m => ({
+          ...m,
+          id: m.id || Math.random().toString(36).substring(7),
+          isLiveGenerated: true
+        }));
+      } else {
+        matchedJobs = (parsed.matches || [])
+          .map((m) => {
+            const job = jobs.find((j) => j.id === m.jobId);
+            return job ? { ...job, score: m.score, reason: m.reason } : null;
+          })
+          .filter(Boolean);
+      }
 
       setMatches(matchedJobs);
       setHasAnalyzed(true);
@@ -187,9 +225,26 @@ REQUIRED JSON FORMAT:
 
   const handleSaveToWishlist = async (job) => {
     try {
-      await toggleWishlist(job.id);
-      setSavedIds((prev) => new Set([...prev, job.id]));
-      if (onJobSaved) onJobSaved(job.id);
+      if (job.isLiveGenerated) {
+        // Add job to backend
+        const newJob = await addJob({
+          company: job.company,
+          role: job.role,
+          location: job.location,
+          status: "Saved",
+          experienceLevel: job.experienceLevel,
+          salary: job.salary,
+          applicationLink: job.applicationLink,
+          jobDescription: job.reason,
+          wishlisted: true
+        });
+        setSavedIds((prev) => new Set([...prev, job.id]));
+        if (onJobSaved) onJobSaved(newJob.id);
+      } else {
+        await toggleWishlist(job.id);
+        setSavedIds((prev) => new Set([...prev, job.id]));
+        if (onJobSaved) onJobSaved(job.id);
+      }
     } catch (e) {
       console.error("Failed to save to wishlist:", e);
     }
@@ -284,6 +339,20 @@ REQUIRED JSON FORMAT:
               {error}
             </div>
           )}
+
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', padding: '10px', background: '#1e293b', borderRadius: '8px', border: '1px solid #334155' }}>
+            <input 
+              type="checkbox" 
+              id="liveSearchToggle" 
+              checked={useLiveSearch}
+              onChange={(e) => setUseLiveSearch(e.target.checked)}
+              style={{ marginRight: '10px', width: '18px', height: '18px', cursor: 'pointer' }}
+            />
+            <label htmlFor="liveSearchToggle" style={{ color: '#f8fafc', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#38bdf8' }}>travel_explore</span>
+              Search live internet for new jobs (Google Search)
+            </label>
+          </div>
 
           <button
             className="ai-analyze-btn"
