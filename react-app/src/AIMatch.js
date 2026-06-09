@@ -481,7 +481,7 @@ REQUIRED JSON FORMAT:
                       </button>
                     )}
                     {job.applicationLink && (
-                      <a href={job.applicationLink} target="_blank" rel="noopener noreferrer">
+                      <a href={job.applicationLink.startsWith('http') ? job.applicationLink : `https://${job.applicationLink}`} target="_blank" rel="noopener noreferrer">
                         <button className="apply-btn-new" style={{ fontSize: "0.7rem", padding: "0.3rem 0.7rem" }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 13 }}>open_in_new</span>
                           Apply
