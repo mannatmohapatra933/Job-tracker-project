@@ -134,6 +134,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    @SuppressWarnings("null")
     private void sendOtp(String email) {
         System.out.println("DEBUG: Inside sendOtp for: " + email);
         try {

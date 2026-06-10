@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +21,8 @@ public class EmailService {
     }
 
     @Async
-    public void sendOtpEmail(String toEmail, String otp) {
+    @SuppressWarnings("null")
+    public void sendOtpEmail(@org.springframework.lang.NonNull String toEmail, @org.springframework.lang.NonNull String otp) {
         // ALWAYS PRINT OTP TO LOGS SO USER CAN SEE IT WITHOUT EMAIL
         System.out.println("DEBUG: Preparing to send email to " + toEmail);
 
@@ -37,11 +37,17 @@ public class EmailService {
 
             if (fromEmail != null && !fromEmail.isEmpty()) {
                 helper.setFrom(fromEmail);
+            } else {
+                helper.setFrom("noreply@jobflow.ai"); // fallback to avoid null
             }
             
             helper.setTo(toEmail);
             helper.setSubject("JobFlow AI — Your Verification Code");
-            helper.setText(buildEmailHtml(otp), true);
+            
+            String html = buildEmailHtml(otp);
+            if (html != null) {
+                helper.setText(html, true);
+            }
 
             mailSender.send(message);
             System.out.println("✅ Email sent successfully to: " + toEmail);

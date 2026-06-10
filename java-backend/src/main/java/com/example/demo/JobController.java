@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -161,8 +160,9 @@ public class JobController {
 
     // DELETE job
     @DeleteMapping("/{id}")
+    @SuppressWarnings("null")
     public ResponseEntity<?> deleteJob(
-        @PathVariable Long id,
+        @PathVariable @org.springframework.lang.NonNull Long id,
         @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Job job = repo.findById(id).orElseThrow();
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -219,7 +219,7 @@ public class JobController {
     
     // UPDATE job
     @PutMapping("/{id}")
-    public Job updateJob(@PathVariable Long id, @RequestBody Job updatedJob) {
+    public Job updateJob(@PathVariable @org.springframework.lang.NonNull Long id, @RequestBody @org.springframework.lang.NonNull Job updatedJob) {
         Job job = repo.findById(id).orElseThrow();
 
         job.setCompany(updatedJob.getCompany());
@@ -294,7 +294,7 @@ public class JobController {
     }
 
     @PutMapping("/{id}/wishlist")
-    public Job toggleWishlist(@PathVariable Long id) {
+    public Job toggleWishlist(@PathVariable @org.springframework.lang.NonNull Long id) {
         Job job = repo.findById(id).orElseThrow();
         job.setWishlisted(!job.isWishlisted());
         return repo.save(job);
