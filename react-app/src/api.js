@@ -57,3 +57,22 @@ export const matchResume = async (prompt, useSearch = false) => {
   }
   return res.json();
 };
+
+// Feedback API
+export const getFeedbacks = async () => {
+  const res = await fetch(`${API_BASE_URL}/feedbacks`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to fetch feedbacks");
+  return res.json();
+};
+
+export const submitFeedback = async (feedbackData) => {
+  const res = await fetch(`${API_BASE_URL}/feedbacks`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(feedbackData),
+  });
+  if (!res.ok) throw new Error("Failed to submit feedback");
+  return res.json();
+};

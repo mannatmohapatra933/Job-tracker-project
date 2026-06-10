@@ -17,9 +17,10 @@ com\example\demo\SecurityConfig.class
 com\example\demo\JobRepository.class
 com\example\demo\CorsConfig.class
 com\example\demo\OtpToken.class
+com\example\demo\DashboardController.class
+com\example\demo\HomeController.class
 com\example\demo\Job.class
 com\example\demo\User.class
 com\example\demo\AuthController.class
 com\example\demo\LoginRequest.class
 com\example\demo\AuthService.class
-com\example\demo\DatabaseConfig.class

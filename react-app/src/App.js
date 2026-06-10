@@ -9,6 +9,7 @@ import Register from "./Register";
 import AddJob from "./AddJob";
 import Settings from "./Settings";
 import AIMatch from "./AIMatch";
+import Feedback from "./Feedback";
 import { toggleWishlist } from "./api";
 import { Routes, Route } from "react-router-dom";
 import NotFound from "./NotFound";
@@ -522,6 +523,7 @@ const normalizeExperience = (exp) => {
             { view: "analytics", icon: "analytics", label: "Insights" },
             { view: "wishlist", icon: "bookmark", label: "Wishlist" },
             { view: "ai-match", icon: "auto_awesome", label: "AI Match" },
+            { view: "feedback", icon: "forum", label: "Feedback" },
           ].map(({ view, icon, label }) => (
             <button
               key={view}
@@ -638,6 +640,7 @@ const normalizeExperience = (exp) => {
           {activeView === "jobs" && <JobsView />}
           {activeView === "analytics" && <Analytics showAnalytics={true} jobs={jobs} />}
           {activeView === "wishlist" && <WishlistView />}
+          {activeView === "feedback" && <Feedback displayName={displayName} />}
           {activeView === "ai-match" && (
             <AIMatch
               jobs={jobs}
