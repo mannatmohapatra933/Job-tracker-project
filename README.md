@@ -18,12 +18,22 @@ JobFlow AI is a high-performance, full-stack application designed to streamline 
 
 - **🔐 Secure Authentication**: JWT-based security with Email OTP verification for account activation.
 - **📌 Precision Tracking**: Manage every stage of your job applications (Applied, Interview, Offer, Rejected).
-- **📊 Advanced Analytics**: Real-time dashboards visualizing offer rates, status distributions, and company-wise metrics.
-- **⭐ Smart Wishlist**: Keep track of high-priority roles with a single-click wishlist feature.
+- **📊 Advanced Analytics (Insights)**: Real-time dashboards with normalized experience-level grouping, offer rates, status distributions, and company-wise metrics. No duplicate entries.
+- **⭐ Smart Wishlist**: Save high-priority roles and directly **Apply** from the wishlist using saved application links — no need to search again.
 - **📝 Contextual Notes**: Add detailed notes for interviews, company research, and feedback.
 - **🔍 Multi-Dimensional Filters**: Filter your career data by company, experience level, and location.
-- **🤖 AI Resume Matcher**: Analyze and match job descriptions to your resume using Gemini 2.5 Flash API directly.
-- **📱 Responsive & Premium UI**: A modern, glassmorphism-inspired interface optimized for all devices.
+- **🤖 AI Resume Matcher (Live Search)**: Drop your resume → Gemini AI searches the internet for real, currently active job openings and returns **direct job posting URLs** (LinkedIn, Naukri, Internshala, Greenhouse, Lever, etc.) so you can apply instantly.
+- **📱 Responsive Mobile UI**: Full mobile bottom navigation including Insights and Feedback sections, with horizontal scroll support for all nav items.
+
+---
+
+## 🆕 Recent Updates
+
+### v1.3 — June 2026
+- **Insights Fix**: Experience level entries from backend are now normalized and merged (e.g., "Fresher", "0-1 Year", "Fresher with 0-1 year of experience" all map to a single "Fresher (0-2 years)" entry — no more duplicates in the chart).
+- **Wishlist Apply Button**: Each wishlist card now shows a purple **"Apply Now"** button alongside "Remove". Clicking it opens the direct job application link saved at the time of adding the job.
+- **Mobile Nav — Insights & Feedback**: Added Insights and Feedback pages to the mobile bottom navigation bar. The bar now supports horizontal scrolling to accommodate all nav items.
+- **AI Match — Direct URL Enforcement**: Improved Gemini prompt to strictly return direct job posting URLs (specific listing pages) instead of generic company homepages or career page roots.
 
 ---
 
@@ -37,7 +47,7 @@ Job-tracker-project/
 │   ├── pom.xml           # Maven Dependencies (PostgreSQL, H2, JWT, Mail)
 │   └── Dockerfile        # Container configuration for backend
 ├── react-app/            # Modern React Frontend UI
-│   ├── src/              # React views (Analytics, AI Match, Auth, Notes)
+│   ├── src/              # React views (Analytics, AI Match, Auth, Notes, Wishlist, Feedback)
 │   ├── package.json      # Frontend package configuration (PDF.js, Axios, React 19)
 │   └── vercel.json       # Vercel deployment configuration
 └── html-css-js/          # Quick prototype/mockup files (legacy/reference)
@@ -176,10 +186,10 @@ The application will launch on `http://localhost:3000`.
 * `GET /api/jobs/analytics/summary` — Key performance indicator stats (offers, interviews, rates).
 * `GET /api/jobs/analytics/by-status` — Count of applications grouped by stage.
 * `GET /api/jobs/analytics/by-company` — Grouped application counts by company.
-* `GET /api/jobs/analytics/by-experience` — Grouped counts by experience level.
+* `GET /api/jobs/analytics/by-experience` — Grouped counts by experience level (normalized).
 
 ### AI Integration (`/api/ai`)
-* `POST /api/ai/match` — Match job descriptions directly with resume data using Gemini 2.5 Flash.
+* `POST /api/ai/match` — Match resume with jobs or search live internet for active job postings using Gemini 2.5 Flash. Returns direct job application URLs.
 
 ---
 
