@@ -2,12 +2,14 @@ D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\User
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\OtpTokenRepository.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\UserRepository.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\security\JwtFilter.java
+D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\FeedbackController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\HomeController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JwtService.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\AuthResponse.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\DashboardController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\Job.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\DatabaseConfig.java
+D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\Feedback.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\CorsConfig.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JobController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\SecurityConfig.java
@@ -20,6 +22,7 @@ D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\Emai
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\LoginRequest.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\JobRepository.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\AiController.java
+D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\FeedbackRepository.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\AuthController.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\OtpToken.java
 D:\projects\Job-tracker-project\java-backend\src\main\java\com\example\demo\DataLoader.java

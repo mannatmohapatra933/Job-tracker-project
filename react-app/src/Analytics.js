@@ -21,6 +21,17 @@ function getStatusColor(status) {
   }
 }
 
+const normalizeExperience = (exp) => {
+  if (!exp) return "";
+  const e = exp.toLowerCase();
+  if (e.includes("intern")) return "Intern";
+  if (e.includes("0-1") || e.includes("fresher") || e.includes("0-2") || e.includes("no prior")) return "Fresher (0-1 year)";
+  if (e.includes("1-3") || e.includes("2-3") || e.includes("2-4") || e.includes("up to 3")) return "1-3 years";
+  if (e.includes("3-5") || e.includes("2-5")) return "3-5 years";
+  if (e.includes("5+")) return "5+ years";
+  return exp;
+};
+
 export default function Analytics({ showAnalytics, jobs = [] }) {
   const [stats, setStats] = useState(null);
   const [byStatus, setByStatus] = useState({});
@@ -47,7 +58,17 @@ export default function Analytics({ showAnalytics, jobs = [] }) {
       setStats(summaryRes.data);
       setByStatus(statusRes.data);
       setByCompany(companyRes.data);
-      setByExperience(expRes.data);
+      
+      const rawExp = expRes.data;
+      const normalizedExp = {};
+      Object.entries(rawExp).forEach(([key, count]) => {
+        const normKey = normalizeExperience(key);
+        if (normKey) {
+          normalizedExp[normKey] = (normalizedExp[normKey] || 0) + count;
+        }
+      });
+      setByExperience(normalizedExp);
+      
       setTotalUsers(statsRes.data.totalUsers);
     } catch (err) {
       console.error("Error fetching analytics:", err);

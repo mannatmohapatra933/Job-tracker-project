@@ -680,6 +680,8 @@ const normalizeExperience = (exp) => {
           { view: "dashboard", icon: "dashboard", label: "Home" },
           { view: "jobs", icon: "work", label: "Jobs" },
           { view: "ai-match", icon: "auto_awesome", label: "AI Match" },
+          { view: "analytics", icon: "analytics", label: "Insights" },
+          { view: "feedback", icon: "forum", label: "Feedback" },
           { view: "wishlist", icon: "bookmark", label: "Saved" },
           { view: "settings", icon: "settings", label: "Settings" },
         ].map(({ view, icon, label }) => (
