@@ -25,10 +25,18 @@ const normalizeExperience = (exp) => {
   if (!exp) return "";
   const e = exp.toLowerCase();
   if (e.includes("intern")) return "Intern";
-  if (e.includes("0-1") || e.includes("fresher") || e.includes("0-2") || e.includes("no prior")) return "Fresher (0-1 year)";
-  if (e.includes("1-3") || e.includes("2-3") || e.includes("2-4") || e.includes("up to 3")) return "1-3 years";
+  // Check broader patterns first before "fresher" to avoid misclassification
+  if (e.includes("up to 3") || e.includes("2-4") || e.includes("1-3") || e.includes("2-3")) return "1-3 years";
   if (e.includes("3-5") || e.includes("2-5")) return "3-5 years";
   if (e.includes("5+")) return "5+ years";
+  // Fresher variants (check after broader ranges)
+  if (
+    e.includes("fresher") ||
+    e.includes("0-1") ||
+    e.includes("0-2") ||
+    e.includes("no prior") ||
+    e.includes("freshers welcome")
+  ) return "Fresher (0-2 years)";
   return exp;
 };
 
@@ -143,7 +151,12 @@ export default function Analytics({ showAnalytics, jobs = [] }) {
   })();
   const effectiveByExp = Object.keys(byExperience).length > 0 ? byExperience : (() => {
     const map = {};
-    jobs.forEach(j => { if (j.experienceLevel) map[j.experienceLevel] = (map[j.experienceLevel] || 0) + 1; });
+    jobs.forEach(j => {
+      if (j.experienceLevel) {
+        const normKey = normalizeExperience(j.experienceLevel);
+        if (normKey) map[normKey] = (map[normKey] || 0) + 1;
+      }
+    });
     return map;
   })();
 

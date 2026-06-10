@@ -578,8 +578,34 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 .wishlist-remove-btn:hover { background: rgba(147,0,10,0.25); }
+
+.wishlist-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+.wishlist-apply-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.875rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-container));
+  color: var(--on-primary-container);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+.wishlist-apply-btn:hover:not(:disabled) { opacity: 0.85; }
 
 /* ---- Mobile Nav ---- */
 .mobile-nav {

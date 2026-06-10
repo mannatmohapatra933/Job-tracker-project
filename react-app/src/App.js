@@ -476,9 +476,24 @@ const normalizeExperience = (exp) => {
                   {job.location}
                 </span>
               )}
-              <button className="wishlist-remove-btn" onClick={() => handleWishlist(job.id)}>
-                Remove
-              </button>
+              <div className="wishlist-card-actions">
+                {job.applicationLink ? (
+                  <a href={job.applicationLink} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
+                    <button className="wishlist-apply-btn">
+                      <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
+                      Apply Now
+                    </button>
+                  </a>
+                ) : (
+                  <button className="wishlist-apply-btn" style={{ flex: 1, opacity: 0.4, cursor: "not-allowed" }} disabled>
+                    <span className="material-symbols-outlined" style={{ fontSize: 14 }}>link_off</span>
+                    No Link
+                  </button>
+                )}
+                <button className="wishlist-remove-btn" onClick={() => handleWishlist(job.id)}>
+                  Remove
+                </button>
+              </div>
             </div>
           ))}
         </div>
