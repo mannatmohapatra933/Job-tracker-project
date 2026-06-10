@@ -29,10 +29,16 @@ public class FeedbackController {
             throw new RuntimeException("Unauthorized");
         }
         
-        // We ensure only authenticated users can post feedback
+        // Extract username and validate the token
         String token = authHeader.substring(7);
-        jwtService.extractUsername(token); // Validates the token implicitly
+        String username = jwtService.extractUsername(token); 
+        
+        if (username == null) {
+            throw new RuntimeException("Invalid token");
+        }
 
+        // Set the username from the token so we know who posted it
+        feedback.setUserName(username);
         return feedbackRepository.save(feedback);
     }
 }
