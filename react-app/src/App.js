@@ -62,6 +62,33 @@ function App() {
 
   const API_URL = `${process.env.REACT_APP_API_URL}/jobs`;
 
+const normalizeLocation = (loc) => {
+  if (!loc) return "";
+  const l = loc.toLowerCase();
+  if (l.includes("remote") || l.includes("home")) return "Remote";
+  if (l.includes("bangalore") || l.includes("bengaluru")) return "Bangalore";
+  if (l.includes("hyderabad")) return "Hyderabad";
+  if (l.includes("pune")) return "Pune";
+  if (l.includes("noida")) return "Noida";
+  if (l.includes("gurgaon")) return "Gurgaon";
+  if (l.includes("mumbai")) return "Mumbai";
+  if (l.includes("chennai")) return "Chennai";
+  if (l.includes("delhi")) return "Delhi";
+  if (l.includes("multiple")) return "Multiple Locations";
+  return loc;
+};
+
+const normalizeExperience = (exp) => {
+  if (!exp) return "";
+  const e = exp.toLowerCase();
+  if (e.includes("intern")) return "Intern";
+  if (e.includes("0-1") || e.includes("fresher") || e.includes("0-2") || e.includes("no prior")) return "Fresher (0-1 year)";
+  if (e.includes("1-3") || e.includes("2-3") || e.includes("2-4") || e.includes("up to 3")) return "1-3 years";
+  if (e.includes("3-5") || e.includes("2-5")) return "3-5 years";
+  if (e.includes("5+")) return "5+ years";
+  return exp;
+};
+
   useEffect(() => {
     if (isAuthenticated) {
       const initData = async () => {
@@ -69,12 +96,22 @@ function App() {
         try {
           // One single call for everything! 🚀
           const res = await axios.get(`${process.env.REACT_APP_API_URL}/dashboard/all`);
-          const { jobs: jobsData, companies, locations, experienceLevels } = res.data;
+          const { jobs: jobsData } = res.data;
+          
+          const cleanJobs = (jobsData || []).map(job => ({
+            ...job,
+            location: normalizeLocation(job.location),
+            experienceLevel: normalizeExperience(job.experienceLevel)
+          }));
 
-          setJobs(jobsData || []);
-          setCompanies(companies || []);
-          setLocations(locations || []);
-          setExperienceLevels(experienceLevels || []);
+          const uniqueLocs = [...new Set(cleanJobs.map(j => j.location).filter(Boolean))].sort();
+          const uniqueExps = [...new Set(cleanJobs.map(j => j.experienceLevel).filter(Boolean))].sort();
+          const uniqueComps = [...new Set(cleanJobs.map(j => j.company).filter(Boolean))].sort();
+
+          setJobs(cleanJobs);
+          setCompanies(uniqueComps);
+          setLocations(uniqueLocs);
+          setExperienceLevels(uniqueExps);
         } catch (err) {
           console.error("Initial data load error:", err);
         } finally {
@@ -86,7 +123,6 @@ function App() {
     }
     // eslint-disable-next-line
   }, [isAuthenticated]);
-
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -108,7 +144,6 @@ function App() {
           job.company?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    // STEP 2: Apply status filter
     if (statusFilter) {
       filtered = filtered.filter((job) => {
         if (statusFilter === "interview") {
@@ -120,42 +155,31 @@ function App() {
         return true;
       });
     }
+
+    if (selectedCompany && selectedCompany !== "All Companies") {
+      filtered = filtered.filter(job => job.company === selectedCompany);
+    }
+    if (selectedExperience && selectedExperience !== "All Experience Levels") {
+      filtered = filtered.filter(job => job.experienceLevel === selectedExperience);
+    }
+    if (selectedLocation && selectedLocation !== "All Locations") {
+      filtered = filtered.filter(job => job.location === selectedLocation);
+    }
+
     setFilteredJobs(filtered);
-  }, [jobs, searchTerm, statusFilter]);
+  }, [jobs, searchTerm, statusFilter, selectedCompany, selectedExperience, selectedLocation]);
 
   useEffect(() => { filterJobs(); }, [filterJobs]);
 
-  const fetchJobs = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const c = !selectedCompany || selectedCompany === "All Companies" ? "" : selectedCompany;
-      const e = !selectedExperience || selectedExperience === "All Experience Levels" ? "" : selectedExperience;
-      const l = !selectedLocation || selectedLocation === "All Locations" ? "" : selectedLocation;
-      const res = await axios.get(
-        `${API_URL}?company=${c}&experienceLevel=${e}&location=${l}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setJobs(res.data);
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
-    }
-  };
-
   const fetchFilters = async () => {
-    try {
-      // Fetch all filters in parallel to save time
-      const [companiesRes, expRes, locRes] = await Promise.all([
-        axios.get(`${API_URL}/filters/companies`),
-        axios.get(`${API_URL}/filters/experience-levels`),
-        axios.get(`${API_URL}/filters/locations`)
-      ]);
+    // Keep this empty or rebuild dynamically since we rely on jobs state
+    const uniqueLocs = [...new Set(jobs.map(j => j.location).filter(Boolean))].sort();
+    const uniqueExps = [...new Set(jobs.map(j => j.experienceLevel).filter(Boolean))].sort();
+    const uniqueComps = [...new Set(jobs.map(j => j.company).filter(Boolean))].sort();
 
-      setCompanies(companiesRes.data || []);
-      setExperienceLevels(expRes.data || []);
-      setLocations(locRes.data || []);
-    } catch (err) {
-      console.error("Error fetching filters:", err);
-    }
+    setCompanies(uniqueComps);
+    setExperienceLevels(uniqueExps);
+    setLocations(uniqueLocs);
   };
 
   const handleWishlist = async (id) => {
@@ -420,9 +444,7 @@ function App() {
           <option value="">All Locations</option>
           {locations.map((l) => <option key={l} value={l}>{l}</option>)}
         </select>
-        <button className="filter-search-btn" onClick={fetchJobs}>
-          Search ✨
-        </button>
+        {/* Instant filtering happens automatically, so no search button needed */}
       </div>
       <div className="jobs-section">
         {filteredJobs.length > 0 ? (
@@ -619,8 +641,27 @@ function App() {
           {activeView === "ai-match" && (
             <AIMatch
               jobs={jobs}
-              onJobSaved={(id) => {
-                setJobs(jobs.map((j) => j.id === id ? { ...j, wishlisted: true } : j));
+              onJobSaved={(id, newJobObj = null) => {
+                if (newJobObj) {
+                  // Normalize and add the newly created internet job to state
+                  const cleanNewJob = {
+                    ...newJobObj,
+                    location: normalizeLocation(newJobObj.location),
+                    experienceLevel: normalizeExperience(newJobObj.experienceLevel)
+                  };
+                  const updatedJobs = [...jobs, cleanNewJob];
+                  setJobs(updatedJobs);
+                  
+                  const uniqueLocs = [...new Set(updatedJobs.map(j => j.location).filter(Boolean))].sort();
+                  const uniqueExps = [...new Set(updatedJobs.map(j => j.experienceLevel).filter(Boolean))].sort();
+                  const uniqueComps = [...new Set(updatedJobs.map(j => j.company).filter(Boolean))].sort();
+                  setCompanies(uniqueComps);
+                  setExperienceLevels(uniqueExps);
+                  setLocations(uniqueLocs);
+                } else {
+                  // Toggle wishlisted on an existing local job
+                  setJobs(jobs.map((j) => j.id === id ? { ...j, wishlisted: true } : j));
+                }
               }}
             />
           )}
@@ -665,9 +706,21 @@ function App() {
         <AddJob
           onClose={() => setShowAddJob(false)}
           onJobAdded={(newJob) => {
-            setJobs([...jobs, newJob]);
+            const cleanNewJob = {
+              ...newJob,
+              location: normalizeLocation(newJob.location),
+              experienceLevel: normalizeExperience(newJob.experienceLevel)
+            };
+            const updatedJobs = [...jobs, cleanNewJob];
+            setJobs(updatedJobs);
             setShowAddJob(false);
-            fetchFilters();
+            
+            const uniqueLocs = [...new Set(updatedJobs.map(j => j.location).filter(Boolean))].sort();
+            const uniqueExps = [...new Set(updatedJobs.map(j => j.experienceLevel).filter(Boolean))].sort();
+            const uniqueComps = [...new Set(updatedJobs.map(j => j.company).filter(Boolean))].sort();
+            setCompanies(uniqueComps);
+            setExperienceLevels(uniqueExps);
+            setLocations(uniqueLocs);
           }}
         />
       )}

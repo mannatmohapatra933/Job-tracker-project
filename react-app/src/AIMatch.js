@@ -21,6 +21,7 @@ function AIMatch({ jobs = [], onJobSaved }) {
   const [useLiveSearch, setUseLiveSearch] = useState(false);
   const [jobRole, setJobRole] = useState("");
   const [locationPref, setLocationPref] = useState("Any");
+  const [experiencePref, setExperiencePref] = useState("Any");
 
   // ---- PDF text extraction ----
   const extractPdfText = async (file) => {
@@ -108,6 +109,9 @@ function AIMatch({ jobs = [], onJobSaved }) {
       }
       if (locationPref !== "Any") {
         candidateProfile += `LOCATION PREFERENCE: Must be ${locationPref}\n`;
+      }
+      if (experiencePref !== "Any") {
+        candidateProfile += `EXPERIENCE LEVEL: ${experiencePref}\n`;
       }
 
       let prompt = "";
@@ -251,7 +255,7 @@ REQUIRED JSON FORMAT:
           wishlisted: true
         });
         setSavedIds((prev) => new Set([...prev, job.id]));
-        if (onJobSaved) onJobSaved(newJob.id);
+        if (onJobSaved) onJobSaved(newJob.id, newJob);
       } else {
         await toggleWishlist(job.id);
         setSavedIds((prev) => new Set([...prev, job.id]));
@@ -365,6 +369,20 @@ REQUIRED JSON FORMAT:
               <option value="Any">Any Location</option>
               <option value="WFH/Remote">Work From Home / Remote</option>
               <option value="WFO">Work From Office</option>
+            </select>
+            <select
+              value={experiencePref}
+              onChange={(e) => setExperiencePref(e.target.value)}
+              className="ai-resume-textarea"
+              style={{ minHeight: "40px", padding: "10px", flex: 1, backgroundColor: "#1e293b", color: "white" }}
+              disabled={loading}
+            >
+              <option value="Any">Any Experience</option>
+              <option value="Intern">Intern</option>
+              <option value="Fresher (0-1 year)">Fresher (0-1 year)</option>
+              <option value="1-3 years">1-3 years</option>
+              <option value="3-5 years">3-5 years</option>
+              <option value="5+ years">5+ years</option>
             </select>
           </div>
 
