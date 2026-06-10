@@ -19,6 +19,8 @@ function AIMatch({ jobs = [], onJobSaved }) {
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef(null);
   const [useLiveSearch, setUseLiveSearch] = useState(false);
+  const [jobRole, setJobRole] = useState("");
+  const [locationPref, setLocationPref] = useState("Any");
 
   // ---- PDF text extraction ----
   const extractPdfText = async (file) => {
@@ -77,13 +79,13 @@ function AIMatch({ jobs = [], onJobSaved }) {
 
   // ---- Analyze ----
   const analyzeResume = async () => {
-    if (!resumeText.trim()) {
-      setError("Resume text is empty! Please paste or drop your resume.");
+    if (!resumeText.trim() && !jobRole.trim()) {
+      setError("Please paste your resume text or type a Target Job Role to search.");
       return;
     }
 
-    if (jobs.length === 0) {
-      setError("No jobs available to match against. Please wait for jobs to load.");
+    if (!useLiveSearch && jobs.length === 0) {
+      setError("No jobs available to match against. Please wait for jobs to load or use Live Search.");
       return;
     }
 
@@ -97,14 +99,24 @@ function AIMatch({ jobs = [], onJobSaved }) {
       // Limit resume text to avoid token overflow causing truncated AI responses
       const safeResumeText = resumeText.substring(0, 15000);
 
+      let candidateProfile = "";
+      if (safeResumeText.trim()) {
+        candidateProfile += `RESUME / PROFILE TEXT:\n"""\n${safeResumeText}\n"""\n`;
+      }
+      if (jobRole.trim()) {
+        candidateProfile += `TARGET JOB ROLE: ${jobRole.trim()}\n`;
+      }
+      if (locationPref !== "Any") {
+        candidateProfile += `LOCATION PREFERENCE: Must be ${locationPref}\n`;
+      }
+
       let prompt = "";
       if (useLiveSearch) {
-        prompt = `You are a career advisor. Search the internet for active, real-time job openings that exactly match this candidate's profile.
+        prompt = `You are a career advisor. Search the internet for active, real-time job openings that exactly match this candidate's profile and preferences.
 Return ONLY a valid JSON object. Do not include markdown formatting or extra text.
-RESUME:
-"""
-${safeResumeText}
-"""
+
+CANDIDATE PROFILE:
+${candidateProfile}
 
 REQUIRED JSON FORMAT:
 {
@@ -127,15 +139,15 @@ REQUIRED JSON FORMAT:
         const jobsList = jobs
           .map(
             (j, i) =>
-              `${i + 1}. ID:${j.id} | Company: ${j.company} | Role: ${j.role} | Skills: ${j.jobDescription || ""}`
+              `${i + 1}. ID:${j.id} | Company: ${j.company} | Role: ${j.role} | Skills: ${j.jobDescription || ""} | Location: ${j.location || ""}`
           )
           .join("\n");
 
         prompt = `You are a career advisor. Return ONLY a valid JSON object. Do not include markdown formatting or extra text.
-RESUME:
-"""
-${safeResumeText}
-"""
+
+CANDIDATE PROFILE:
+${candidateProfile}
+
 AVAILABLE JOBS:
 ${jobsList}
 
@@ -333,6 +345,29 @@ REQUIRED JSON FORMAT:
             disabled={loading}
           />
 
+          <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+            <input
+              type="text"
+              placeholder="Target Role (e.g., Frontend Developer)"
+              value={jobRole}
+              onChange={(e) => setJobRole(e.target.value)}
+              className="ai-resume-textarea"
+              style={{ minHeight: "40px", padding: "10px", flex: 1 }}
+              disabled={loading}
+            />
+            <select
+              value={locationPref}
+              onChange={(e) => setLocationPref(e.target.value)}
+              className="ai-resume-textarea"
+              style={{ minHeight: "40px", padding: "10px", flex: 1, backgroundColor: "#1e293b", color: "white" }}
+              disabled={loading}
+            >
+              <option value="Any">Any Location</option>
+              <option value="WFH/Remote">Work From Home / Remote</option>
+              <option value="WFO">Work From Office</option>
+            </select>
+          </div>
+
           {error && (
             <div className="ai-error-box">
               <span className="material-symbols-outlined">error</span>
@@ -357,7 +392,7 @@ REQUIRED JSON FORMAT:
           <button
             className="ai-analyze-btn"
             onClick={analyzeResume}
-            disabled={loading || !resumeText.trim()}
+            disabled={loading || (!resumeText.trim() && !jobRole.trim())}
           >
             {loading ? (
               <>
