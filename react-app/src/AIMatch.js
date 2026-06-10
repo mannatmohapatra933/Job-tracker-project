@@ -116,26 +116,32 @@ function AIMatch({ jobs = [], onJobSaved }) {
 
       let prompt = "";
       if (useLiveSearch) {
-        prompt = `You are a career advisor. Search the internet for active, real-time job openings that exactly match this candidate's profile and preferences.
-Return ONLY a valid JSON object. Do not include markdown formatting or extra text.
+        prompt = `You are a career advisor with access to the internet. Search for REAL, CURRENTLY ACTIVE job postings that match this candidate's profile.
+
+CRITICAL RULES FOR applicationLink:
+- The URL MUST be a direct link to the specific job posting page (e.g., LinkedIn job URL like linkedin.com/jobs/view/1234567, Naukri listing, Internshala post, company ATS page)
+- Do NOT put a company homepage like "google.com" or a general careers page like "careers.google.com"
+- The URL must go directly to where the candidate can click "Apply" for THIS specific role
+- If you cannot find a real direct posting URL, use the most specific page possible (e.g., careers.company.com/job-title)
+- Prefer: LinkedIn, Naukri, Internshala, Glassdoor, Wellfound, company ATS (Greenhouse/Lever/Workday) direct job links
 
 CANDIDATE PROFILE:
 ${candidateProfile}
 
-REQUIRED JSON FORMAT:
+REQUIRED JSON FORMAT (return ONLY this, no markdown):
 {
   "summary": "2 sentence overall analysis",
   "matches": [
     {
       "id": "generate_a_random_unique_string",
       "company": "Company Name",
-      "role": "Job Title",
+      "role": "Exact Job Title",
       "location": "Job Location",
       "experienceLevel": "Experience required",
-      "salary": "Estimated Salary or N/A",
-      "applicationLink": "Exact URL to apply for this job post",
+      "salary": "Salary range or N/A",
+      "applicationLink": "DIRECT link to THIS specific job posting (not homepage)",
       "score": <number 0-100>,
-      "reason": "1 sentence reason why it matches"
+      "reason": "1 sentence why it matches the candidate"
     }
   ]
 }`;

@@ -62,32 +62,32 @@ function App() {
   const notifRef = useRef(null);
 
 
-const normalizeLocation = (loc) => {
-  if (!loc) return "";
-  const l = loc.toLowerCase();
-  if (l.includes("remote") || l.includes("home")) return "Remote";
-  if (l.includes("bangalore") || l.includes("bengaluru")) return "Bangalore";
-  if (l.includes("hyderabad")) return "Hyderabad";
-  if (l.includes("pune")) return "Pune";
-  if (l.includes("noida")) return "Noida";
-  if (l.includes("gurgaon")) return "Gurgaon";
-  if (l.includes("mumbai")) return "Mumbai";
-  if (l.includes("chennai")) return "Chennai";
-  if (l.includes("delhi")) return "Delhi";
-  if (l.includes("multiple")) return "Multiple Locations";
-  return loc;
-};
+  const normalizeLocation = (loc) => {
+    if (!loc) return "";
+    const l = loc.toLowerCase();
+    if (l.includes("remote") || l.includes("home")) return "Remote";
+    if (l.includes("bangalore") || l.includes("bengaluru")) return "Bangalore";
+    if (l.includes("hyderabad")) return "Hyderabad";
+    if (l.includes("pune")) return "Pune";
+    if (l.includes("noida")) return "Noida";
+    if (l.includes("gurgaon")) return "Gurgaon";
+    if (l.includes("mumbai")) return "Mumbai";
+    if (l.includes("chennai")) return "Chennai";
+    if (l.includes("delhi")) return "Delhi";
+    if (l.includes("multiple")) return "Multiple Locations";
+    return loc;
+  };
 
-const normalizeExperience = (exp) => {
-  if (!exp) return "";
-  const e = exp.toLowerCase();
-  if (e.includes("intern")) return "Intern";
-  if (e.includes("0-1") || e.includes("fresher") || e.includes("0-2") || e.includes("no prior")) return "Fresher (0-1 year)";
-  if (e.includes("1-3") || e.includes("2-3") || e.includes("2-4") || e.includes("up to 3")) return "1-3 years";
-  if (e.includes("3-5") || e.includes("2-5")) return "3-5 years";
-  if (e.includes("5+")) return "5+ years";
-  return exp;
-};
+  const normalizeExperience = (exp) => {
+    if (!exp) return "";
+    const e = exp.toLowerCase();
+    if (e.includes("intern")) return "Intern";
+    if (e.includes("0-1") || e.includes("fresher") || e.includes("0-2") || e.includes("no prior")) return "Fresher (0-1 year)";
+    if (e.includes("1-3") || e.includes("2-3") || e.includes("2-4") || e.includes("up to 3")) return "1-3 years";
+    if (e.includes("3-5") || e.includes("2-5")) return "3-5 years";
+    if (e.includes("5+")) return "5+ years";
+    return exp;
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -97,7 +97,7 @@ const normalizeExperience = (exp) => {
           // One single call for everything! 🚀
           const res = await axios.get(`${process.env.REACT_APP_API_URL}/dashboard/all`);
           const { jobs: jobsData } = res.data;
-          
+
           const cleanJobs = (jobsData || []).map(job => ({
             ...job,
             location: normalizeLocation(job.location),
@@ -659,7 +659,7 @@ const normalizeExperience = (exp) => {
                   };
                   const updatedJobs = [...jobs, cleanNewJob];
                   setJobs(updatedJobs);
-                  
+
                   const uniqueLocs = [...new Set(updatedJobs.map(j => j.location).filter(Boolean))].sort();
                   const uniqueExps = [...new Set(updatedJobs.map(j => j.experienceLevel).filter(Boolean))].sort();
                   const uniqueComps = [...new Set(updatedJobs.map(j => j.company).filter(Boolean))].sort();
@@ -724,7 +724,7 @@ const normalizeExperience = (exp) => {
             const updatedJobs = [...jobs, cleanNewJob];
             setJobs(updatedJobs);
             setShowAddJob(false);
-            
+
             const uniqueLocs = [...new Set(updatedJobs.map(j => j.location).filter(Boolean))].sort();
             const uniqueExps = [...new Set(updatedJobs.map(j => j.experienceLevel).filter(Boolean))].sort();
             const uniqueComps = [...new Set(updatedJobs.map(j => j.company).filter(Boolean))].sort();
