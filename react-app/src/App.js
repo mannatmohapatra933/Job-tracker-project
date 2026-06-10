@@ -61,7 +61,6 @@ function App() {
   const [showNotif, setShowNotif] = useState(false);
   const notifRef = useRef(null);
 
-  const API_URL = `${process.env.REACT_APP_API_URL}/jobs`;
 
 const normalizeLocation = (loc) => {
   if (!loc) return "";
@@ -172,16 +171,7 @@ const normalizeExperience = (exp) => {
 
   useEffect(() => { filterJobs(); }, [filterJobs]);
 
-  const fetchFilters = async () => {
-    // Keep this empty or rebuild dynamically since we rely on jobs state
-    const uniqueLocs = [...new Set(jobs.map(j => j.location).filter(Boolean))].sort();
-    const uniqueExps = [...new Set(jobs.map(j => j.experienceLevel).filter(Boolean))].sort();
-    const uniqueComps = [...new Set(jobs.map(j => j.company).filter(Boolean))].sort();
 
-    setCompanies(uniqueComps);
-    setExperienceLevels(uniqueExps);
-    setLocations(uniqueLocs);
-  };
 
   const handleWishlist = async (id) => {
     const updatedJob = await toggleWishlist(id);
