@@ -1,58 +1,69 @@
 package com.example.demo;
 
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Map;
+import java.util.List;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
-    
     @Value("${spring.mail.username:}")
     private String fromEmail;
 
-    public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    @Value("${spring.mail.password:}")
+    private String apiKey;
+
+    private final RestTemplate restTemplate;
+
+    public EmailService() {
+        this.restTemplate = new RestTemplate();
     }
 
     @Async
     @SuppressWarnings("null")
     public void sendOtpEmail(@org.springframework.lang.NonNull String toEmail, @org.springframework.lang.NonNull String otp) {
-        // ALWAYS PRINT OTP TO LOGS SO USER CAN SEE IT WITHOUT EMAIL
-        System.out.println("DEBUG: Preparing to send email to " + toEmail);
+        System.out.println("DEBUG: Preparing to send email via Brevo API to " + toEmail);
 
-        if (mailSender == null) {
-            System.err.println("❌ JavaMailSender is null! Check your configuration.");
+        if (apiKey == null || apiKey.isEmpty() || apiKey.length() < 20) {
+            System.err.println("❌ Invalid or missing API Key! Please set MAIL_PASSWORD to your Brevo API key.");
             return;
         }
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String url = "https://api.brevo.com/v3/smtp/email";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", apiKey);
 
-            if (fromEmail != null && !fromEmail.isEmpty()) {
-                helper.setFrom(fromEmail);
+            String senderEmail = (fromEmail != null && !fromEmail.isEmpty()) ? fromEmail : "noreply@jobflow.ai";
+
+            Map<String, Object> payload = Map.of(
+                "sender", Map.of("name", "JobFlow AI", "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", "JobFlow AI — Your Verification Code",
+                "htmlContent", buildEmailHtml(otp)
+            );
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("✅ Email sent successfully via Brevo API to: " + toEmail);
             } else {
-                helper.setFrom("noreply@jobflow.ai"); // fallback to avoid null
-            }
-            
-            helper.setTo(toEmail);
-            helper.setSubject("JobFlow AI — Your Verification Code");
-            
-            String html = buildEmailHtml(otp);
-            if (html != null) {
-                helper.setText(html, true);
+                System.err.println("❌ Failed to send email via API. Status: " + response.getStatusCode());
             }
 
-            mailSender.send(message);
-            System.out.println("✅ Email sent successfully to: " + toEmail);
         } catch (Exception e) {
-            System.err.println("❌ Failed to send real email: " + e.getMessage());
+            System.err.println("❌ Failed to send real email via API: " + e.getMessage());
             e.printStackTrace();
         }
     }

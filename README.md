@@ -88,8 +88,8 @@ To run or deploy the backend, set the following environment variables:
 | `SPRING_DATASOURCE_URL` | PostgreSQL Connection string | `jdbc:postgresql://<host>:<port>/<db>` |
 | `SPRING_DATASOURCE_USERNAME` | Database username | `postgres` |
 | `SPRING_DATASOURCE_PASSWORD` | Database password | `yourpassword` |
-| `MAIL_USER` | SMTP Gmail address | `example@gmail.com` |
-| `MAIL_PASSWORD` | Gmail App Password | `xxxx xxxx xxxx xxxx` |
+| `MAIL_USER` | Verified Brevo Sender Email | `example@gmail.com` |
+| `MAIL_PASSWORD` | Brevo API Key | `xkeysib-...` |
 | `GEMINI_API_KEY` | Google Gemini API Key | `AIzaSy...` |
 | `PORT` | Web server port | `8080` |
 
