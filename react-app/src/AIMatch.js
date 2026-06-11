@@ -3,8 +3,8 @@ import "./AIMatch.css";
 import { toggleWishlist, matchResume, addJob } from "./api";
 import * as pdfjsLib from "pdfjs-dist";
 
-// Use the bundled worker from public folder (local, no CDN dependency)
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+// Use unpkg CDN for pdf worker to avoid issues with Vercel serving static files
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 function AIMatch({ jobs = [], onJobSaved }) {
   const [resumeText, setResumeText] = useState("");
@@ -175,11 +175,11 @@ REQUIRED JSON FORMAT:
       }
 
       const data = await matchResume(prompt, useLiveSearch);
-      
+
       // Combine all parts just in case response is split
       const parts = data?.candidates?.[0]?.content?.parts || [];
       const rawText = parts.map(p => p.text).join("") || "";
-      
+
       console.log("RAW AI RESPONSE:", rawText);
 
       if (!rawText) {
@@ -188,10 +188,10 @@ REQUIRED JSON FORMAT:
 
       // Clean markdown fences if they exist
       let cleaned = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-      
+
       const jsonStart = cleaned.indexOf("{");
       const jsonEnd = cleaned.lastIndexOf("}");
-      
+
       if (jsonStart === -1 || jsonEnd === -1) {
         // Fallback: try parsing the whole cleaned string if { or } is missing
         try {
@@ -203,7 +203,7 @@ REQUIRED JSON FORMAT:
       } else {
         cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
       }
-      
+
       let parsed;
       try {
         parsed = JSON.parse(cleaned);
@@ -400,9 +400,9 @@ REQUIRED JSON FORMAT:
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', padding: '10px', background: '#1e293b', borderRadius: '8px', border: '1px solid #334155' }}>
-            <input 
-              type="checkbox" 
-              id="liveSearchToggle" 
+            <input
+              type="checkbox"
+              id="liveSearchToggle"
               checked={useLiveSearch}
               onChange={(e) => setUseLiveSearch(e.target.checked)}
               style={{ marginRight: '10px', width: '18px', height: '18px', cursor: 'pointer' }}
