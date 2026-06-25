@@ -119,11 +119,10 @@ function AIMatch({ jobs = [], onJobSaved }) {
         prompt = `You are a career advisor with access to the internet. Search for REAL, CURRENTLY ACTIVE job postings that match this candidate's profile.
 
 CRITICAL RULES FOR applicationLink:
-- The URL MUST be a direct link to the specific job posting page (e.g., LinkedIn job URL like linkedin.com/jobs/view/1234567, Naukri listing, Internshala post, company ATS page)
-- Do NOT put a company homepage like "google.com" or a general careers page like "careers.google.com"
-- The URL must go directly to where the candidate can click "Apply" for THIS specific role
-- If you cannot find a real direct posting URL, use the most specific page possible (e.g., careers.company.com/job-title)
-- Prefer: LinkedIn, Naukri, Internshala, Glassdoor, Wellfound, company ATS (Greenhouse/Lever/Workday) direct job links
+- Provide a 100% real, verifiable link to the job posting.
+- If you are NOT absolutely certain of the exact application URL, DO NOT hallucinate or guess a URL (like company.com/careers/job-123) because it will lead to a 404 error.
+- If you cannot find the exact URL, you MUST return a Google search link for the job instead. Format it as: https://www.google.com/search?q=[Company]+[Role]+job+application
+- For example: https://www.google.com/search?q=Google+Frontend+Developer+job+application
 
 CANDIDATE PROFILE:
 ${candidateProfile}

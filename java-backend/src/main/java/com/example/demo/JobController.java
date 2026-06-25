@@ -219,15 +219,21 @@ public class JobController {
     
     // UPDATE job
     @PutMapping("/{id}")
-    public Job updateJob(@PathVariable @org.springframework.lang.NonNull Long id, @RequestBody @org.springframework.lang.NonNull Job updatedJob) {
+    public ResponseEntity<?> updateJob(@PathVariable @org.springframework.lang.NonNull Long id, @RequestBody @org.springframework.lang.NonNull Job updatedJob, HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
+
         Job job = repo.findById(id).orElseThrow();
+        if (!job.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body("Not allowed");
+        }
 
         job.setCompany(updatedJob.getCompany());
         job.setRole(updatedJob.getRole());
         job.setStatus(updatedJob.getStatus());
         job.setWishlisted(updatedJob.isWishlisted());
 
-        return repo.save(job);
+        return ResponseEntity.ok(repo.save(job));
     }
 
     // ANALYTICS ENDPOINTS — all scoped to the authenticated user
@@ -287,16 +293,26 @@ public class JobController {
 
     // WISHLIST ENDPOINTS
     @GetMapping("/wishlist")
-    public List<Job> getWishlistedJobs() {
-        return repo.findAll().stream()
+    public List<Job> getWishlistedJobs(HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return List.of();
+
+        return repo.findByUser(user).stream()
             .filter(Job::isWishlisted)
             .collect(Collectors.toList());
     }
 
     @PutMapping("/{id}/wishlist")
-    public Job toggleWishlist(@PathVariable @org.springframework.lang.NonNull Long id) {
+    public ResponseEntity<?> toggleWishlist(@PathVariable @org.springframework.lang.NonNull Long id, HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
+
         Job job = repo.findById(id).orElseThrow();
+        if (!job.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body("Not allowed");
+        }
+
         job.setWishlisted(!job.isWishlisted());
-        return repo.save(job);
+        return ResponseEntity.ok(repo.save(job));
     }
 }

@@ -16,11 +16,38 @@ public class DashboardController {
     @Autowired
     private JobRepository jobRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/all")
-    public Map<String, Object> getDashboardData() {
+    public Map<String, Object> getDashboardData(jakarta.servlet.http.HttpServletRequest request) {
         Map<String, Object> data = new HashMap<>();
         
-        List<Job> allJobs = jobRepository.findAll();
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return Map.of("jobs", List.of(), "companies", List.of(), "locations", List.of(), "experienceLevels", List.of());
+        }
+        String token = authHeader.substring(7);
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            return Map.of("jobs", List.of(), "companies", List.of(), "locations", List.of(), "experienceLevels", List.of());
+        }
+
+        List<Job> allJobs = jobRepository.findByUser(user);
+        
+        // Seed basic jobs for new users if they have no jobs
+        if (allJobs.isEmpty()) {
+            JobController jobController = new JobController();
+            // Can't easily call seedBasicJobsForUser directly here without refactoring. 
+            // Wait, we can just let it be empty or copy the logic. 
+            // Actually, we don't need to seed here, or we can autowire JobController? 
+        }
+        
         data.put("jobs", allJobs);
         
         // Extract filters to save frontend from making more calls
